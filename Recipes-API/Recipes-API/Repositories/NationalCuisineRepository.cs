@@ -1,0 +1,32 @@
+﻿using Microsoft.EntityFrameworkCore;
+using Recipes_API.DATA;
+using Recipes_API.Models;
+
+namespace Recipes_API.Repositories;
+
+
+public class NationalCuisineRepository
+{
+    private readonly RecipesSiteDbContext dbContext;
+
+    public NationalCuisineRepository(RecipesSiteDbContext dbContext)
+    {
+        this.dbContext = dbContext;
+    }
+    public async Task<long> GetIdOrAddAsync(string nationalCuisine)
+    {
+        var n_nationalCuisine = await dbContext.NationalCuisines.FirstOrDefaultAsync((x) => x.Name == nationalCuisine);
+        if (n_nationalCuisine != null)
+            return n_nationalCuisine.Id;
+
+        var new_nationalCuisine = await dbContext.NationalCuisines.AddAsync(new NationalCuisine()
+        {
+            Name = nationalCuisine
+        });
+
+        await dbContext.SaveChangesAsync();
+
+        return new_nationalCuisine.Entity.Id;
+    }
+}
+

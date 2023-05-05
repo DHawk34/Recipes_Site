@@ -1,0 +1,283 @@
+#new_recipe_container {
+    background-color: white;
+    max-width: 700px;   
+    width: 85%;
+    margin: auto;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    border-radius: 15px;
+    padding: 25px;
+}
+
+.finished_dish {
+    display: flex;
+    background-color: lightgrey;
+    text-align: center;
+    margin: auto;
+    aspect-ratio: 3/2;
+    max-height: 400px;
+    max-width: 600px;
+    cursor: pointer;
+    border-radius: 15px;
+}
+
+.input_field {
+    width: 100%;
+    height: 40px;
+    font-size: 1em;
+    border: 1px solid gray;
+    border-radius: 8px;
+    padding-left: 10px;
+    padding-right: 10px;
+    box-sizing: border-box;
+
+}
+
+.input_number {
+    width: 50px;
+    height: 40px;
+    text-align: center;
+    font-size: 1em;
+    border: 1px solid gray;
+    border-radius: 8px;
+}
+
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    -moz-appearance: textfield;
+}
+input[type=number] {
+    -moz-appearance:textfield; /* Firefox */
+}
+
+.half_width {
+    width: 50%;
+}
+
+.full_width {
+    width: 100%;
+}
+
+.margin_top {
+    margin-top: 16px;
+}
+
+.left_text {
+    text-align: start;
+}
+
+.instruction {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.instruction_step {
+    display: flex;
+    gap: 10px;
+}
+
+.instruction_step>textarea {
+    height: auto;
+    text-align: start;
+    resize: none;
+    border-radius: 8px;
+    width: 60%;
+    font-size: 1.2em;
+    padding: 8px;
+    box-sizing: border-box;
+}
+
+.instruction_step_drop {
+    display: flex;
+    background-color: var(--bg-color);
+    text-align: center;
+    max-height: 200px;
+    max-width: 300px;
+    aspect-ratio: 3 / 2;
+    cursor: pointer;
+    border-radius: 15px;
+}
+
+.instruction_step_header {
+    display: flex;
+    justify-content: space-between
+}
+
+@media screen and (max-width: 550px) {
+    .instruction_step{
+        display: flex;
+        flex-direction: column;
+    }
+    .instruction_step>textarea {
+        height: 150px;
+        width: 100%;
+    }
+    .instruction_step_drop{
+        max-width: 100%;
+        max-height: 100%;
+    }
+}
+
+.ingredient_container {
+    display: flex;
+    align-items: center;
+}
+
+.ingredient_info {
+    padding: 10px;
+    background-color: var(--bg-color);
+    border-radius: 6px;
+    flex-grow: 1;
+}
+
+.delete_ingredient_button {
+    border: none;
+    background: none;
+}
+
+.delete_ingredient_button:hover {
+    color: brown;
+    cursor: pointer;
+}
+
+.ingredients {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.horizontal-center {
+    display: flex;
+    align-items: center;
+}
+
+.margin-right{
+    margin-right: 10px;
+}
+
+.radio_group {
+    display: flex;
+    justify-content: center;
+    flex-direction: row-reverse;
+    position: relative;
+    
+}
+
+.radio_group input {
+    display: none;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* #difficult_group>input {
+    display: none;
+} */
+
+.incorrect_input{
+    border-color: red;
+}
+
+#reset_button{
+    background: none;
+    border: none;
+    height: 20px;
+    width: 20px;
+}
+
+#reset_button:hover{
+    cursor: pointer;
+}
+
+.con_width{
+    width: 120px;
+}
+
+/* difficult_radio */
+#difficult_group>input+label {
+    padding: 5px;
+    color: lightgray;
+    cursor: pointer;
+}
+
+#difficult_group>input:checked~label,
+#difficult_group+label:hover~label,
+#difficult_group+label:hover {
+    color: gold;
+}
+
+#difficult_group:hover>input+label {
+    color: lightgray;
+}
+
+#difficult_group:hover>input+label:hover~label,
+#difficult_group:hover>input+label:hover {
+    color: gold;
+}
+
+#difficult_group>label:hover {
+    transform: scale(1.1);
+}
+
+/* hot_radio */
+
+#hot_group>input+label {
+    padding: 5px;
+    color: lightgray;
+    cursor: pointer;
+}
+
+#hot_group>input:checked~label,
+#hot_group+label:hover~label,
+#hot_group+label:hover {
+    color: brown;
+}
+
+#hot_group:hover>input+label {
+    color: lightgray;
+}
+
+#hot_group:hover>input+label:hover~label,
+#hot_group:hover>input+label:hover {
+    color: brown;
+}
+
+#hot_group>label:hover {
+    transform: scale(1.1);
+}
+
+
+/* .horizontal {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+} */
+
+#cook_time_hours_label {
+    margin-right: 32px;
+}
+
+.cover_image {
+    height: 100%;
+    max-width: 100%;
+    margin: auto;
+    object-fit: cover;
+    border-radius: 15px;
+}
+
+textarea, input[type="text"]{
+    border: 1px solid gray;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+}
+
+.center_text {
+    margin: auto;
+}
+
+.submit_button{
+    margin-top: 40px;
+}

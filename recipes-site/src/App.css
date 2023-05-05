@@ -1,0 +1,24 @@
+.button {
+  background-color: var(--btn-main-color);
+  box-sizing: border-box;
+  border-radius: 8px;
+  text-align: center;
+  padding: 10px;
+  border: none;
+  font-size: 1em;
+}
+
+.button:hover {
+  background-color: var(--btn-second-color);
+  cursor: pointer;
+}
+
+.button:active {
+  background-color: var(--btn-main-color);
+}
+
+.horizontal {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
