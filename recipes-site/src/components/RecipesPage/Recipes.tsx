@@ -42,9 +42,10 @@ export function Recipes() {
     request.send();
 
     request.onload = () => {
-      var recipesFromServer: Array<RecipeModel> = Object.assign(new Array<RecipeModel>(), request.response)
+      var recipesFromServer: Array<RecipeModel> = request.response
       setRecipes(recipesFromServer)
     }
+    document.title = 'Рецепты'
   }, []);
 
   const getIngredientsText = (recipe: RecipeModel) => {
@@ -65,14 +66,19 @@ export function Recipes() {
     navigate(`${recipeId}`)
   }
 
-  const startPressTimer = () => {
+  const startPressTimer = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    if (e.nativeEvent.button !== 0)
+      return;
+    e.currentTarget.classList.add('selected')
+
     isLongPress.current = false;
     timerRef.current = setTimeout(() => {
       isLongPress.current = true;
     }, 300);
   }
 
-  const clearPressTimer = () => {
+  const clearPressTimer = (element: HTMLElement) => {
+    element.classList.remove('selected')
     clearTimeout(timerRef.current);
   }
 
@@ -80,7 +86,7 @@ export function Recipes() {
 
   //return {
   let recipeItems = recipes.map((recipe: RecipeModel, index: number) => {
-    return <div className='recipe_card' key={index} onClick={() => openRecipe(recipe.id)} onMouseDown={() => startPressTimer()} onMouseUp={clearPressTimer}>
+    return <div className='recipe_card' key={index} onClick={() => openRecipe(recipe.id)} onMouseDown={(e) => startPressTimer(e)} onMouseUp={(e) => clearPressTimer(e.currentTarget)}>
       <div className='flip-card-inner'>
         <div className='recipe_preview'>
           <img src={config.apiServer + `image?id=${recipe.finishImage}`} alt={recipe.name} />

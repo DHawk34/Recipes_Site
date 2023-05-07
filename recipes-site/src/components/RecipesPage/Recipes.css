@@ -10,10 +10,15 @@
 .recipe_card {
     min-width: 250px;
     min-height: 300px;
-    aspect-ratio: 5 / 6;
+    aspect-ratio: 1 / 1;
     width: 100%;
     background-color: transparent;
     perspective: 1000px;
+    user-select: none;
+    -moz-user-select: none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    -o-user-select: none;
 }
 
 .recipe_card:hover {
@@ -45,7 +50,7 @@
     box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, .5);
 }
 
-.recipe_card:active .flip-card-inner {
+.recipe_card.selected:active .flip-card-inner {
     transition-delay: 0.3s;
     transform: rotateY(180deg);
 }

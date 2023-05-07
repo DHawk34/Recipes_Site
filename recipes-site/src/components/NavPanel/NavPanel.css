@@ -18,9 +18,18 @@
     top: 65px;
     left: 0;
     background-color: var(--bg-color);
+    width: 250px;
+    height: calc(100vh - 65px);
+    transition: all 0.2s ease-out;
+}
+
+#nav_background{
+    background-color: rgba(0, 0, 0, .5);
+    position: absolute;
+    top: 65px;
+    left: 0;
     width: 100%;
     height: calc(100vh - 65px);
-    transition: all 0.02s ease-out;
 }
 
 .search_field {

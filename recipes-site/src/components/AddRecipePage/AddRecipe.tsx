@@ -27,6 +27,7 @@ export class AddRecipe extends React.Component<{}, AddRecipeState> {
                 }
             ]
         }
+        document.title = 'Добавление рецепта'
     }
 
     onUnload = (e: any) => {
@@ -103,12 +104,12 @@ export class AddRecipe extends React.Component<{}, AddRecipeState> {
 
     validateTextInput = (target: HTMLInputElement | HTMLTextAreaElement) => {
         if (target.value === '')
-            target.className += ' incorrect_input'
+            target.classList.add('incorrect_input')
 
     }
 
     clearValidate = (target: HTMLInputElement | HTMLTextAreaElement) => {
-        target.className = target.className.replace(' incorrect_input', '')
+        target.classList.remove('incorrect_input')
     }
 
     insertInstructionText = (index: number, text: string) => {
@@ -181,6 +182,13 @@ export class AddRecipe extends React.Component<{}, AddRecipeState> {
         //request.send(JSON.stringify(postRequest));
     }
 
+    incrementPortionCount = (increment: number) => {
+        var element = document.getElementById('portion_сount') as HTMLInputElement;
+        var portionCount = Number(element.value);
+        portionCount += increment;
+        element.value = portionCount.toString();
+    }
+
     render(): React.ReactNode {
         let ingredientsElements = this.state.ingredients.map((item: { name: string; amount: number; }, index: number) => {
             return <div className='ingredient_container' key={index}>
@@ -193,11 +201,11 @@ export class AddRecipe extends React.Component<{}, AddRecipeState> {
 
         let instructionElements = this.state.instruction_steps.map((item: { instruction: string | undefined, image: File | undefined }, index: number) => {
             return <div key={index}>
-                <div className='instruction_step_header'>
+                <div className='instruction_step_header_creation'>
                     <h4 className='step_text'>Шаг {index + 1}</h4>
                     <button className='delete_ingredient_button' onClick={() => this.deleteStep(index)}><Trashcan width='25px' height='25px'></Trashcan></button>
                 </div>
-                <div className='instruction_step'>
+                <div className='instruction_step_creation'>
                     <Dropzone onDrop={acceptedFiles => {
                         this.addImageStep(index, acceptedFiles[0])
                     }}>
@@ -281,7 +289,11 @@ export class AddRecipe extends React.Component<{}, AddRecipeState> {
                     <label htmlFor="cook_time_minutes">&nbsp;&nbsp;минут</label>
                 </div>
                 <p>Порции <sup className='red'>*</sup></p>
-                <input className='input_number' id='portion_сount' type='number' name='portion_сount' defaultValue={1} required></input>
+                <div className='horizontal'>
+                    <button className='button increment_button' onClick={() => this.incrementPortionCount(-1)}>-</button>
+                    <input className='input_number' id='portion_сount' type='number' name='portion_сount' defaultValue={1} required></input>
+                    <button className='button increment_button' onClick={() => this.incrementPortionCount(1)}>+</button>
+                </div>
 
                 <p>Ингредиенты <sup className='red'>*</sup></p>
                 <div className='ingredients'>
