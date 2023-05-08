@@ -10,12 +10,12 @@
     flex-direction: column;
 }
 
-#search_container h4{
-    margin-top: 15px;
-    margin-bottom: 15px;
+#search_container h4 {
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
-#show_more_button{
+#show_more_button {
     border: none;
     background: none;
     align-self: flex-end;
@@ -23,10 +23,16 @@
     padding-top: 5px;
     padding-bottom: 5px;
     font-size: 0.9em;
+    color: rgb(92, 0, 0);
 }
 
-#search_container.width-0{
+#show_more_button:hover {
+    cursor: pointer;
+}
 
+#search_container.height-0 {
+    height: 0;
+    overflow: hidden;
 }
 
 .search_field_recipe {
@@ -36,18 +42,20 @@
     height: 40px;
     width: 100%;
 }
-.search_field_recipe> input {
+
+.search_field_recipe>input {
     width: 100%;
     /* max-width: 250px; */
 }
 
-.ingredient_select{
+.ingredient_select {
     width: 100%;
 }
 
-#search_container{
+#search_container {
     display: flex;
     flex-direction: column;
+    transition: all 0.2s ease-out;
 }
 
 .recipe_card {
@@ -64,6 +72,12 @@
     -o-user-select: none;
 }
 
+.recipe_card,
+.recipe_card:visited,
+.recipe_card:hover,
+.recipe_card:active {
+    color: inherit;
+}
 
 .recipe_card:hover {
     cursor: pointer;
@@ -107,6 +121,7 @@
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
 }
+
 .recipe_info {
     transform: rotateY(180deg);
 }
@@ -116,7 +131,87 @@
     display: grid;
     justify-items: center;
     justify-content: center;
-    grid-template-columns: repeat(auto-fill, minmax(220px,1fr));
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     row-gap: 20px;
     column-gap: 45px;
+}
+
+/*radio_groups*/
+#search_container .radio_group {
+    display: flex;
+    justify-content: center;
+    flex-direction: row-reverse;
+    position: relative;
+    margin-left: -5px;
+}
+
+#search_container .radio_group input {
+    display: none;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+#search_container #reset_button {
+    background: none;
+    border: none;
+    height: 20px;
+    width: 20px;
+}
+
+#search_container #reset_button:hover {
+    cursor: pointer;
+}
+
+/* difficult_radio */
+#search_container #difficult_group>input+label {
+    padding: 5px;
+    color: lightgray;
+    cursor: pointer;
+}
+
+#search_container #difficult_group>input:checked~label,
+#search_container #difficult_group+label:hover~label,
+#search_container #difficult_group+label:hover {
+    color: gold;
+}
+
+#search_container #difficult_group:hover>input+label {
+    color: lightgray;
+}
+
+#search_container #difficult_group:hover>input+label:hover~label,
+#search_container #difficult_group:hover>input+label:hover {
+    color: gold;
+}
+
+#search_container #difficult_group>label:hover {
+    transform: scale(1.1);
+}
+
+/* hot_radio */
+
+#search_container #hot_group>input+label {
+    padding: 5px;
+    color: lightgray;
+    cursor: pointer;
+}
+
+#search_container #hot_group>input:checked~label,
+#search_container #hot_group+label:hover~label,
+#search_container #hot_group+label:hover {
+    color: brown;
+}
+
+#search_container #hot_group:hover>input+label {
+    color: lightgray;
+}
+
+#search_container #hot_group:hover>input+label:hover~label,
+#search_container #hot_group:hover>input+label:hover {
+    color: brown;
+}
+
+#search_container #hot_group>label:hover {
+    transform: scale(1.1);
 }

@@ -161,7 +161,7 @@ input[type=number] {
     margin-right: 10px;
 }
 
-.radio_group {
+#new_recipe_container .radio_group {
     display: flex;
     justify-content: center;
     flex-direction: row-reverse;
@@ -169,7 +169,7 @@ input[type=number] {
 
 }
 
-.radio_group input {
+#new_recipe_container .radio_group input {
     display: none;
     opacity: 0;
     width: 0;
@@ -180,14 +180,14 @@ input[type=number] {
     display: none;
 } */
 
-#reset_button {
+#new_recipe_container #reset_button {
     background: none;
     border: none;
     height: 20px;
     width: 20px;
 }
 
-#reset_button:hover {
+#new_recipe_container #reset_button:hover {
     cursor: pointer;
 }
 
@@ -196,55 +196,55 @@ input[type=number] {
 }
 
 /* difficult_radio */
-#difficult_group>input+label {
+#new_recipe_container #difficult_group>input+label {
     padding: 5px;
     color: lightgray;
     cursor: pointer;
 }
 
-#difficult_group>input:checked~label,
-#difficult_group+label:hover~label,
-#difficult_group+label:hover {
+#new_recipe_container #difficult_group>input:checked~label,
+#new_recipe_container #difficult_group+label:hover~label,
+#new_recipe_container #difficult_group+label:hover {
     color: gold;
 }
 
-#difficult_group:hover>input+label {
+#new_recipe_container #difficult_group:hover>input+label {
     color: lightgray;
 }
 
-#difficult_group:hover>input+label:hover~label,
-#difficult_group:hover>input+label:hover {
+#new_recipe_container #difficult_group:hover>input+label:hover~label,
+#new_recipe_container #difficult_group:hover>input+label:hover {
     color: gold;
 }
 
-#difficult_group>label:hover {
+#new_recipe_container #difficult_group>label:hover {
     transform: scale(1.1);
 }
 
 /* hot_radio */
 
-#hot_group>input+label {
+#new_recipe_container #hot_group>input+label {
     padding: 5px;
     color: lightgray;
     cursor: pointer;
 }
 
-#hot_group>input:checked~label,
-#hot_group+label:hover~label,
-#hot_group+label:hover {
+#new_recipe_container #hot_group>input:checked~label,
+#new_recipe_container #hot_group+label:hover~label,
+#new_recipe_container #hot_group+label:hover {
     color: brown;
 }
 
-#hot_group:hover>input+label {
+#new_recipe_container #hot_group:hover>input+label {
     color: lightgray;
 }
 
-#hot_group:hover>input+label:hover~label,
-#hot_group:hover>input+label:hover {
+#new_recipe_container #hot_group:hover>input+label:hover~label,
+#new_recipe_container #hot_group:hover>input+label:hover {
     color: brown;
 }
 
-#hot_group>label:hover {
+#new_recipe_container #hot_group>label:hover {
     transform: scale(1.1);
 }
 
