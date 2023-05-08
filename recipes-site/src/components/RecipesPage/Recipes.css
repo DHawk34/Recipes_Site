@@ -1,10 +1,53 @@
 #recipes_container {
     background-color: white;
     width: 85%;
+    max-width: 700px;
     margin: auto;
     margin-top: 20px;
     border-radius: 15px;
     padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+#search_container h4{
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+#show_more_button{
+    border: none;
+    background: none;
+    align-self: flex-end;
+    padding: 0;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    font-size: 0.9em;
+}
+
+#search_container.width-0{
+
+}
+
+.search_field_recipe {
+    display: flex;
+    align-items: stretch;
+    margin: 0;
+    height: 40px;
+    width: 100%;
+}
+.search_field_recipe> input {
+    width: 100%;
+    /* max-width: 250px; */
+}
+
+.ingredient_select{
+    width: 100%;
+}
+
+#search_container{
+    display: flex;
+    flex-direction: column;
 }
 
 .recipe_card {
@@ -20,6 +63,7 @@
     -webkit-user-select: none;
     -o-user-select: none;
 }
+
 
 .recipe_card:hover {
     cursor: pointer;

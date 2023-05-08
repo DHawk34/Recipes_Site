@@ -44,6 +44,11 @@
     height: 100%;
 }
 
+#menu_icon{
+    border: none;
+    background: none;
+}
+
 .nav_button {
     background-color: transparent;
     font-size: large;

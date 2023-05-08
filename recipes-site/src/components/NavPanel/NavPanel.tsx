@@ -45,9 +45,9 @@ export function NavPanel() {
   return (
     <div id='nav_container'>
       <div id='mobile'>
-        <div id='menu_icon' onClick={handleClick}>
+        <button id='menu_icon' onClick={handleClick}>
           {clicked ? <Cross width='35px' height='35px' /> : <Hamburger width='35px' height='35px' />}
-        </div>
+        </button>
 
         <div id='nav_background' className='hidden' onClick={handleClick}></div>
         <div id='mobile_nav_container' className='width-0'>

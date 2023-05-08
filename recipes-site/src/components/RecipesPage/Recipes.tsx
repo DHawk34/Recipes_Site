@@ -3,6 +3,8 @@ import './Recipes.css';
 import config from '../../config.json'
 import RecipeModel from '../../models/recipeModel';
 import { useNavigate } from 'react-router-dom';
+import { Magnifier } from '../icons/magnifier';
+import Select, { Theme } from 'react-select';
 
 // type MyState = {
 //   recipes: Array<Recipe>,
@@ -24,17 +26,6 @@ export function Recipes() {
 
   // }
 
-  // componentDidMount(): void {
-  //   const request = new XMLHttpRequest();
-  //   request.open("GET", config.apiServer + "recipe/all");
-  //   request.responseType = 'json';
-  //   request.send();
-
-  //   request.onload = () => {
-  //     var recipesFromServer: Array<Recipe> = Object.assign(new Array<Recipe>(), request.response)
-  //     this.setState({ recipes: recipesFromServer })
-  //   }
-  // }
   useEffect(() => {
     const request = new XMLHttpRequest();
     request.open("GET", config.apiServer + "recipe/all");
@@ -82,9 +73,26 @@ export function Recipes() {
     clearTimeout(timerRef.current);
   }
 
+  // const aquaticCreatures = [
+  //   { label: 'Shark', value: 'Shark' },
+  //   { label: 'Dolphin', value: 'Dolphin' },
+  //   { label: 'Whale', value: 'Whale' },
+  //   { label: 'Octopus', value: 'Octopus' },
+  //   { label: 'Crab', value: 'Crab' },
+  //   { label: 'Lobster', value: 'Lobster' },
+  // ];
 
+  type MyOptionType = {
+    label: string;
+    value: string;
+  };
 
-  //return {
+  const options: MyOptionType[] = [
+    { value: "chocolate", label: "Chocolate" },
+    { value: "strawberry", label: "Strawberry" },
+    { value: "vanilla", label: "Vanilla" }
+  ];
+
   let recipeItems = recipes.map((recipe: RecipeModel, index: number) => {
     return <div className='recipe_card' key={index} onClick={() => openRecipe(recipe.id)} onMouseDown={(e) => startPressTimer(e)} onMouseUp={(e) => clearPressTimer(e.currentTarget)}>
       <div className='flip-card-inner'>
@@ -100,8 +108,28 @@ export function Recipes() {
     </div>
   })
 
+  const selectTheme = (theme: Theme) => ({
+    ...theme,
+    colors: {
+      ...theme.colors,
+      primary25: 'lightgray',
+      primary: 'black',
+    },
+  })
+
   return (
     <div id='recipes_container'>
+      <h3>Поиск</h3>
+      <div className='search_field_recipe'><input type="search" name="recipe_search" id='recipe_search_field' placeholder="Название рецепта" /><button type='submit'><Magnifier width='20px' height='20px' /></button></div>
+      <button id='show_more_button'>Расширенный поиск</button>
+      <div id='search_container'>
+        <h4>Добавить ингредиент</h4>
+        <Select options={options} isMulti name='add_ingredient' placeholder='Выберите ингредиент' theme={selectTheme}></Select>
+        <h4>Исключить ингредиент</h4>
+        <Select options={options} isMulti name='remove_ingredient' placeholder='Выберите ингредиент' theme={selectTheme}></Select>
+        <h4>Кухня мира</h4>
+        <Select options={options} isMulti name='nationalCuisine' placeholder='Выберите кухню' theme={selectTheme}></Select>
+      </div>
       <h3>Все рецепты</h3>
 
       <div id='recipes_grid'>
