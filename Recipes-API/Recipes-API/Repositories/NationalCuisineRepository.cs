@@ -13,6 +13,12 @@ public class NationalCuisineRepository
     {
         this.dbContext = dbContext;
     }
+
+    public async Task<List<NationalCuisine>> GetAllAsync()
+    {
+        return await dbContext.NationalCuisines.ToListAsync();
+    }
+
     public async Task<long> GetIdOrAddAsync(string nationalCuisine)
     {
         var n_nationalCuisine = await dbContext.NationalCuisines.FirstOrDefaultAsync((x) => x.Name == nationalCuisine);

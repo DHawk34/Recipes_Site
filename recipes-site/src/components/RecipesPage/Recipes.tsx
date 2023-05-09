@@ -8,6 +8,7 @@ import Select, { Theme } from 'react-select';
 import { Fire } from '../icons/fire';
 import { Refresh } from '../icons/refresh';
 import { Star } from '../icons/star';
+import { SelectStyle } from '../../styles';
 
 // type MyState = {
 //   recipes: Array<Recipe>,
@@ -46,7 +47,7 @@ export function Recipes() {
   const getIngredientsText = (recipe: RecipeModel) => {
     var finalStr = "";
     recipe.recipeIngredients.forEach(ingredients => {
-      finalStr += ingredients.ingridientNavigation.name + ", "
+      finalStr += ingredients.ingredientNavigation.name + ", "
     });
 
     finalStr = finalStr.slice(0, -2)
@@ -114,26 +115,12 @@ export function Recipes() {
   //   { label: 'Lobster', value: 'Lobster' },
   // ];
 
-  type MyOptionType = {
-    label: string;
-    value: string;
-  };
 
-  const options: MyOptionType[] = [
-    { value: "chocolate", label: "Chocolate" },
-    { value: "strawberry", label: "Strawberry" },
-    { value: "vanilla", label: "Vanilla" }
-  ];
-
-
-  const selectTheme = (theme: Theme) => ({
-    ...theme,
-    colors: {
-      ...theme.colors,
-      primary25: 'lightgray',
-      primary: 'black',
-    },
-  })
+  // const options: MyOptionType[] = [
+  //   { value: "chocolate", label: "Chocolate" },
+  //   { value: "strawberry", label: "Strawberry" },
+  //   { value: "vanilla", label: "Vanilla" }
+  // ];
 
   let recipeItems = recipes.map((recipe: RecipeModel, index: number) => {
     return <a className='recipe_card' href={`recipes/${recipe.id}`} key={index} onClick={(e) => openRecipe(e, recipe.id)} onMouseDown={(e) => startPressTimer(e)} onMouseUp={(e) => clearPressTimer(e.currentTarget)}>
@@ -156,12 +143,12 @@ export function Recipes() {
       <div className='search_field_recipe'><input type="search" name="recipe_search" id='recipe_search_field' placeholder="Название рецепта" /><button type='submit'><Magnifier width='20px' height='20px' /></button></div>
       <button id='show_more_button' onClick={handleShowExtra}>Расширенный поиск</button>
       <div id='search_container' className='height-0'>
-        <h4>Добавить ингредиент</h4>
-        <Select options={options} isMulti name='add_ingredient' placeholder='Выберите ингредиент' theme={selectTheme}></Select>
-        <h4>Исключить ингредиент</h4>
-        <Select options={options} isMulti name='remove_ingredient' placeholder='Выберите ингредиент' theme={selectTheme}></Select>
+        <h4>Содержит ингредиент</h4>
+        {/* <Select options={options} isMulti name='add_ingredient' placeholder='Выберите ингредиент' styles={mySelectStyle} noOptionsMessage={() => 'Ингредиент не найден'}></Select> */}
+        <h4>Не содержит ингредиент</h4>
+        {/* <Select options={options} isMulti name='remove_ingredient' placeholder='Выберите ингредиент' styles={mySelectStyle} noOptionsMessage={() => 'Ингредиент не найден'}></Select> */}
         <h4>Кухня мира</h4>
-        <Select options={options} isMulti name='nationalCuisine' placeholder='Выберите кухню' theme={selectTheme}></Select>
+        {/* <Select options={options} isMulti name='nationalCuisine' placeholder='Выберите кухню' styles={mySelectStyle} noOptionsMessage={() => 'Кухня не найдена'}></Select> */}
         <h4 className='margin-right con_width horizontal'>Сложность <button id='reset_button' onClick={resetDifficult}><Refresh width='20px' height='20px' /></button></h4>
         <div className='horizontal-center'>
           <div className='radio_group' id='difficult_group'>

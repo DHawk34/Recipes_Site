@@ -3,7 +3,7 @@
 namespace Recipes_API.Models.CustomModels
 {
 
-    public record CustomRecipe(string name, CustomRecipe.ImageWithType finishDishImage, string? nationalCuisine, int difficult, int hot, string cookTime, int portionCount, CustomRecipe.Ingredient[] ingredients, CustomRecipe.Instruction_step[] instruction, string creation_time)
+    public record CustomRecipe(string name, CustomRecipe.ImageWithType finishDishImage, int group, string? nationalCuisine, int difficult, int hot, string cookTime, int portionCount, CustomRecipe.Ingredient[] ingredients, CustomRecipe.Instruction_step[] instruction, string creation_time)
     {
 
         public static async ValueTask<CustomRecipe?> BindAsync(HttpContext httpContext, ParameterInfo parameter)
@@ -11,6 +11,7 @@ namespace Recipes_API.Models.CustomModels
             var name = httpContext.Request.Form["name"];
             var finishDish = httpContext.Request.Form.Files.GetFile("finishDishImage");
             var nationalCuisine = httpContext.Request.Form["nationalCuisine"];
+            int.TryParse(httpContext.Request.Form["group"], out var group);
             int.TryParse(httpContext.Request.Form["difficult"], out var difficult);
             int.TryParse(httpContext.Request.Form["hot"], out var hot);
             var cookTime = httpContext.Request.Form["cookTime"];
@@ -82,6 +83,7 @@ namespace Recipes_API.Models.CustomModels
                 new CustomRecipe(
                     m_name,
                     finishDishImage,
+                    group,
                     m_nationalCuisine,
                     difficult,
                     hot,

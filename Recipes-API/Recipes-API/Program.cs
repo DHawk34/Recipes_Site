@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Recipes_API.DATA;
+using Recipes_API.Models;
 using Recipes_API.Models.CustomModels;
 using Recipes_API.Repositories;
 using Recipes_API.Services;
@@ -28,6 +29,7 @@ builder.Services.AddTransient<NationalCuisineRepository>();
 builder.Services.AddTransient<RecipeIngredientsRepository>();
 builder.Services.AddTransient<RecipeInstructionRepository>();
 builder.Services.AddTransient<ImagesRepository>();
+builder.Services.AddTransient<RecipeGroupRepository>();
 
 
 builder.Services.AddTransient<RecipeService>();
@@ -57,7 +59,15 @@ app.MapGet("/ingredients", async (IngredientsRepository repo) =>
     return await repo.GetAllAsync();
 });
 
+app.MapGet("/recipe-groups", async (RecipeGroupRepository repo) =>
+{
+    return await repo.GetAllGroupsAsync();
+});
 
+app.MapGet("/cuisines", async (NationalCuisineRepository repo) =>
+{
+    return await repo.GetAllAsync();
+});
 
 app.MapPost("/recipe/add", async (HttpRequest request, HttpContext context, CustomRecipe recipe, RecipeService recipeService) =>
 {

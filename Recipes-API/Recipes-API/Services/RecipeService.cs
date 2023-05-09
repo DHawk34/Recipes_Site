@@ -37,7 +37,7 @@ public class RecipeService
             national_cuisine = await nationalCuisineRepo.GetIdOrAddAsync(recipe.nationalCuisine);
 
         var finishDishImageId = await imagesRepo.AddImageAsync(recipe.finishDishImage.data, recipe.finishDishImage.contentType);
-        var recipeId = await recipeRepo.AddNewRecipeAsync(finishDishImageId, recipe.name, national_cuisine, recipe.cookTime, recipe.portionCount, recipe.difficult, recipe.hot, recipe.creation_time);
+        var recipeId = await recipeRepo.AddNewRecipeAsync(finishDishImageId, recipe.name, recipe.group, national_cuisine, recipe.cookTime, recipe.portionCount, recipe.difficult, recipe.hot, recipe.creation_time);
 
         foreach (var ingridient in recipe.ingredients)
         {

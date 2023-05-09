@@ -13,11 +13,12 @@ public class RecipeRepository
         this.dbContext = dbContext;
     }
 
-    public async Task<long> AddNewRecipeAsync(long finishDishImage, string name, long? nationalCuisine, string cookTime, int portionCount, int difficult, int hot, string creationTime)
+    public async Task<long> AddNewRecipeAsync(long finishDishImage, string name, long group, long? nationalCuisine, string cookTime, int portionCount, int difficult, int hot, string creationTime)
     {
         var new_recipe = await dbContext.Recipes.AddAsync(new Recipe()
         {
             Name = name,
+            Group = group,
             FinishImage = finishDishImage,
             NationalCuisine = nationalCuisine,
             CookTime = cookTime,
@@ -33,12 +34,12 @@ public class RecipeRepository
 
     public async Task<List<Recipe>> GetAllAsync()
     {
-        return await dbContext.Recipes.Include(x => x.NationalCuisineNavigation).Include(x => x.RecipeIngredients).ThenInclude(x => x.IngridientNavigation).ToListAsync();
+        return await dbContext.Recipes.Include(x => x.GroupNavigation).Include(x => x.NationalCuisineNavigation).Include(x => x.RecipeIngredients).ThenInclude(x => x.IngredientNavigation).ToListAsync();
     }
 
     public async Task<Recipe?> GetAsync(long id)
     {
-        return await dbContext.Recipes.Include(x => x.NationalCuisineNavigation).Include(x => x.RecipeIngredients).ThenInclude(x => x.IngridientNavigation).Include(x => x.RecipeInstructions).FirstOrDefaultAsync(x=> x.Id == id);
+        return await dbContext.Recipes.Include(x => x.GroupNavigation).Include(x => x.NationalCuisineNavigation).Include(x => x.RecipeIngredients).ThenInclude(x => x.IngredientNavigation).Include(x => x.RecipeInstructions).FirstOrDefaultAsync(x=> x.Id == id);
     }
 }
 

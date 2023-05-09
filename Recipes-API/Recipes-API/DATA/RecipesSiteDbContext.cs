@@ -20,10 +20,11 @@ public partial class RecipesSiteDbContext : DbContext
 
     public virtual DbSet<Recipe> Recipes { get; set; }
 
+    public virtual DbSet<RecipeGroup> RecipeGroups { get; set; }
+
     public virtual DbSet<RecipeIngredient> RecipeIngredients { get; set; }
 
     public virtual DbSet<RecipeInstruction> RecipeInstructions { get; set; }
-
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -57,6 +58,7 @@ public partial class RecipesSiteDbContext : DbContext
             entity.Property(e => e.CreationTime).HasColumnName("creationTime");
             entity.Property(e => e.Difficult).HasColumnName("difficult");
             entity.Property(e => e.FinishImage).HasColumnName("finishImage");
+            entity.Property(e => e.Group).HasColumnName("group");
             entity.Property(e => e.Hot).HasColumnName("hot");
             entity.Property(e => e.Name).HasColumnName("name");
             entity.Property(e => e.NationalCuisine).HasColumnName("nationalCuisine");
@@ -66,7 +68,19 @@ public partial class RecipesSiteDbContext : DbContext
                 .HasForeignKey(d => d.FinishImage)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
+            entity.HasOne(d => d.GroupNavigation).WithMany(p => p.Recipes)
+                .HasForeignKey(d => d.Group)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
             entity.HasOne(d => d.NationalCuisineNavigation).WithMany(p => p.Recipes).HasForeignKey(d => d.NationalCuisine);
+        });
+
+        modelBuilder.Entity<RecipeGroup>(entity =>
+        {
+            entity.ToTable("Recipe_Group");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Name).HasColumnName("name");
         });
 
         modelBuilder.Entity<RecipeIngredient>(entity =>
@@ -79,7 +93,7 @@ public partial class RecipesSiteDbContext : DbContext
             entity.Property(e => e.Ingredient).HasColumnName("ingredient");
             entity.Property(e => e.Amount).HasColumnName("amount");
 
-            entity.HasOne(d => d.IngridientNavigation).WithMany(p => p.RecipeIngredients)
+            entity.HasOne(d => d.IngredientNavigation).WithMany(p => p.RecipeIngredients)
                 .HasForeignKey(d => d.Ingredient)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 

@@ -28,7 +28,7 @@ export function Recipe() {
             setPortionCount(recipeFromServer.portionCount)
             let ingredientsArr: { name: string, amountPerOne: number }[] = [];
             recipeFromServer?.recipeIngredients.forEach(ingr => {
-                ingredientsArr.push({ name: ingr.ingridientNavigation.name, amountPerOne: ingr.amount / recipeFromServer.portionCount })
+                ingredientsArr.push({ name: ingr.ingredientNavigation.name, amountPerOne: ingr.amount / recipeFromServer.portionCount })
             });
             setIngredients(ingredientsArr);
             document.title = recipeFromServer.name;
