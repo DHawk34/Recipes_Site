@@ -95,4 +95,9 @@ app.MapGet("/recipe", async (long id, RecipeRepository repo) =>
     return await repo.GetAsync(id);
 });
 
+app.MapGet("/recipe/search", async (string? name, long[]? a_ingr, long[]? r_ingr, long? n_cuisine, long? group, long? time, long? difficult, long? hot, RecipeService repo) =>
+{
+    return await repo.SearchRecipesAsync(name, a_ingr, r_ingr, n_cuisine, group, time, difficult, hot);
+});
+
 app.Run();

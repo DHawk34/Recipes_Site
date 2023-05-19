@@ -12,10 +12,16 @@ export function NavPanel() {
   function getButtons() {
     return <>
       {/* <NavLink className='button nav_button' to={'/search'}>Расширенный поиск</NavLink> */}
-      <NavLink className='button nav_button' to={'/recipes'} onClick={hideMenu}>Рецепты</NavLink>
+      <NavLink className='button nav_button' to={'/recipes'} onClick={hideMenu} state={{ myState: { refresh: true } }}>Рецепты</NavLink>
       <NavLink className='button nav_button' to={'/recipes/new'} onClick={hideMenu}>Добавить рецепт</NavLink>
     </>
   }
+
+  // const openRecipes = () => {
+  //   hideMenu();
+  //   appHistory.push('/temp')
+  //   appHistory.replace('/recipes')
+  // }
 
   const handleClick = () => {
     setClicked(!clicked)

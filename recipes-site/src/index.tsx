@@ -9,7 +9,7 @@ const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 
-const client = new QueryClient();
+const client = new QueryClient({ defaultOptions: { queries: { refetchOnWindowFocus: false } } });
 
 root.render(
   <React.StrictMode>

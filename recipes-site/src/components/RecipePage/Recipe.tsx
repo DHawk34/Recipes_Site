@@ -2,39 +2,55 @@ import React, { useEffect, useState } from 'react';
 import './Recipe.css';
 import config from '../../config.json'
 import RecipeModel from '../../models/recipeModel';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Star } from '../icons/star';
 import { Fire } from '../icons/fire';
 import { Clock } from '../icons/clock';
 import { EarthPlanet } from '../icons/earthPlanet';
+import { useQuery } from 'react-query';
 
 export function Recipe() {
-    const [recipe, setRecipe] = useState<RecipeModel>();
+    // const [recipe, setRecipe] = useState<RecipeModel>();
     const [ingredients, setIngredients] = useState<{ name: string, amountPerOne: number }[]>();
     const [portionCount, setPortionCount] = useState<number>(1);
 
     const params = useParams()
     const recipeId = params.id;
-    useEffect(() => {
-        // console.log("reload")
-        const request = new XMLHttpRequest();
-        request.open("GET", config.apiServer + `recipe?id=${recipeId}`);
-        request.responseType = 'json';
-        request.send();
 
-        request.onload = () => {
-            var recipeFromServer: RecipeModel = request.response
-            setRecipe(recipeFromServer)
-            setPortionCount(recipeFromServer.portionCount)
-            let ingredientsArr: { name: string, amountPerOne: number }[] = [];
-            recipeFromServer?.recipeIngredients.forEach(ingr => {
-                ingredientsArr.push({ name: ingr.ingredientNavigation.name, amountPerOne: ingr.amount / recipeFromServer.portionCount })
-            });
-            setIngredients(ingredientsArr);
-            document.title = recipeFromServer.name;
-        }
+    const navigate = useNavigate();
+    
+    //recipes
+    const { data: recipeFromServerResponse } = useQuery(`recipe`, () => fetchData(`recipe?id=${recipeId}`));
+    var recipe: RecipeModel = recipeFromServerResponse
 
-    }, [recipeId]);
+    const fetchData = async (method: string) => {
+        return fetch(config.apiServer + method)
+            .then(res => res.json())
+            .catch(e => {
+                navigate('*')
+            })
+    }
+    
+    // useEffect(() => {
+    //     // console.log("reload")
+    //     const request = new XMLHttpRequest();
+    //     request.open("GET", config.apiServer + `recipe?id=${recipeId}`);
+    //     request.responseType = 'json';
+    //     request.send();
+
+    //     request.onload = () => {
+    //         var recipeFromServer: RecipeModel = request.response
+    //         setRecipe(recipeFromServer)
+    //         setPortionCount(recipeFromServer.portionCount)
+    //         let ingredientsArr: { name: string, amountPerOne: number }[] = [];
+    //         recipeFromServer?.recipeIngredients.forEach(ingr => {
+    //             ingredientsArr.push({ name: ingr.ingredientNavigation.name, amountPerOne: ingr.amount / recipeFromServer.portionCount })
+    //         });
+    //         setIngredients(ingredientsArr);
+    //         document.title = recipeFromServer.name;
+    //     }
+
+    // }, [recipeId]);
 
     function getCookTime() {
         var time = recipe?.cookTime.split(':');
@@ -46,7 +62,7 @@ export function Recipe() {
         let finalStr = '';
         if (hours !== '0')
             finalStr += hours + ' час '
-        if(minutes !== '0')
+        if (minutes !== '0')
             finalStr += minutes + ' мин'
 
         return finalStr.trim();

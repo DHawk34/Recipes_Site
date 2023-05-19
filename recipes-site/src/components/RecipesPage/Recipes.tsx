@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import './Recipes.css';
+import styles from './Recipes.module.css'
 import config from '../../config.json'
 import RecipeModel from '../../models/recipeModel';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { Magnifier } from '../icons/magnifier';
 import Select from 'react-select';
 import { SelectStyle } from '../../styles';
@@ -19,24 +19,42 @@ type MyOptionTypeInt = {
   value: number;
 };
 
-const mySelectStyle = SelectStyle<MyOptionTypeInt>()
 
+const mySelectStyle = SelectStyle<MyOptionTypeInt>()
 
 export function Recipes() {
 
   // const [recipes, setRecipes] = useState(Array<RecipeModel>());
   const [showExtraSearch, setShowExtraSearch] = useState<boolean>(false);
+  const [searchHeader, setHeader] = useState<string>('Все рецепты')
+
   const timerRef = useRef<NodeJS.Timeout>();
   const isLongPress = useRef<boolean>();
+  const location = useLocation()
+  const navigate = useNavigate();
+
+  const myState = location.state
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  function resetStates() {
+    setShowExtraSearch(false)
+    var extraSearchContainer = document.getElementById(styles.search_container)
+    extraSearchContainer?.classList.add(styles.height_0)
+
+    setHeader('Все рецепты')
+    recipeRefetch()
+  }
+  // let addIngredientSelect: any = null;
+
 
 
   //recipes
-  const { data: recipesFromServerResponse } = useQuery('recipes', () => fetchData('recipe/all'));
+  const { data: recipesFromServerResponse, refetch: recipeRefetch } = useQuery('recipes', fetchRecipe);
   var recipes: Array<RecipeModel> = recipesFromServerResponse
-
   //groups
-  const { data: groupsFromServerResponse } = useQuery('groups', () => fetchData('recipe-groups'));
-  var groups: MyOptionTypeInt[] = [];
+  const { data: groupsFromServerResponse } = useQuery('groups', () => fetchData('recipe-groups'), {
+  });
+  var groups: MyOptionTypeInt[] = [{ label: 'Любая', value: -1 }];
 
   var groupsFromServer: Array<IdNameModel> = groupsFromServerResponse
 
@@ -46,7 +64,10 @@ export function Recipes() {
 
   //ingredients
 
-  const { data: ingredientsFromServerResponse } = useQuery('ingredients', () => fetchData('ingredients'));
+  const { data: ingredientsFromServerResponse, isSuccess: ingredientsSuccess } = useQuery('ingredients', () => fetchData('ingredients'), {
+  });
+
+
   var ingredients: MyOptionTypeInt[] = [];
 
   var ingredientsFromServer: Array<IdNameModel> = ingredientsFromServerResponse
@@ -56,8 +77,9 @@ export function Recipes() {
   });
 
   //cuisines
-  const { data: cuisinesFromServerResponse } = useQuery('cuisines', () => fetchData('cuisines'));
-  var allCuisines: MyOptionTypeInt[] = [];
+  const { data: cuisinesFromServerResponse } = useQuery('cuisines', () => fetchData('cuisines'), {
+  });
+  var allCuisines: MyOptionTypeInt[] = [{ label: 'Любая', value: -1 }];
 
   var cuisinesFromServer: Array<IdNameModel> = cuisinesFromServerResponse
 
@@ -71,28 +93,72 @@ export function Recipes() {
       .then(res => res.json())
   }
 
-  //const []
-  // constructor(props: any) {
-  //   super(props);
-  //   this.state = {
-  //     recipes: [],
-  //     canOpenRecipe: true
-  //   }
+  async function fetchRecipe() {
+    let url = new URL(config.apiServer + 'recipe/search')
+    let name = searchParams.get('recipe_search')
+    let a_ingr = searchParams.getAll('a_ingr')
+    let r_ingr = searchParams.getAll('r_ingr')
+    let n_cuisine = searchParams.get('n_cuisine')
+    let group = searchParams.get('group')
+    let time = searchParams.get('time')
+    let difficult = searchParams.get('difficult')
+    let hot = searchParams.get('hot')
 
-  // }
+    if (name)
+      url.searchParams.append('name', name)
+
+    if (n_cuisine)
+      url.searchParams.append('n_cuisine', n_cuisine)
+
+    if (group)
+      url.searchParams.append('group', group)
+
+    if (time)
+      url.searchParams.append('time', time)
+
+    if (difficult)
+      url.searchParams.append('difficult', difficult)
+
+    if (hot)
+      url.searchParams.append('hot', hot)
+
+
+    a_ingr.forEach(ingr => {
+      url.searchParams.append('a_ingr', ingr)
+    });
+
+    r_ingr.forEach(ingr => {
+      url.searchParams.append('r_ingr', ingr)
+    });
+
+    if (Array.from(url.searchParams).length > 0)
+      setHeader('Результаты поиска')
+
+    return fetch(url)
+      .then(res => res.json())
+  }
+
+
+  const setupIngredients = (ref: any, ids: string[]) => {
+    var ingredients = getIngredietsByIds(ids)
+    ref?.setValue(ingredients)
+    return ingredients;
+  }
+
+  const setupSingleSelect = (ref: any, id: string, source: MyOptionTypeInt[]) => {
+    let option = source.find(x => String(x.value) === id);
+    ref?.setValue(option)
+  }
+
 
   useEffect(() => {
-    // const request = new XMLHttpRequest();
-    // request.open("GET", config.apiServer + "recipe/all");
-    // request.responseType = 'json';
-    // request.send();
+    if (myState != null && myState.myState.refresh) {
+      console.log('reset')
+      resetStates()
+    }
 
-    // request.onload = () => {
-    //   var recipesFromServer: Array<RecipeModel> = request.response
-    //   setRecipes(recipesFromServer)
-    // }
     document.title = 'Рецепты'
-  }, []);
+  }, [myState]);
 
   const getIngredientsText = (recipe: RecipeModel) => {
     var finalStr = "";
@@ -104,8 +170,6 @@ export function Recipes() {
     return finalStr
   }
 
-  const navigate = useNavigate();
-
   const openRecipe = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>, recipeId: number) => {
     e.preventDefault()
     if (isLongPress.current)
@@ -116,7 +180,7 @@ export function Recipes() {
   const startPressTimer = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
     if (e.nativeEvent.button !== 0)
       return;
-    e.currentTarget.classList.add('selected')
+    e.currentTarget.classList.add(styles.selected)
 
     isLongPress.current = false;
     timerRef.current = setTimeout(() => {
@@ -125,29 +189,111 @@ export function Recipes() {
   }
 
   const clearPressTimer = (element: HTMLElement) => {
-    element.classList.remove('selected')
+    element.classList.remove(styles.selected)
     clearTimeout(timerRef.current);
   }
 
   const handleShowExtra = () => {
-    console.log(showExtraSearch)
-    var extraSearchContainer = document.getElementById('search_container')
+    var extraSearchContainer = document.getElementById(styles.search_container)
     if (!showExtraSearch)
-      extraSearchContainer?.classList.remove('height-0')
+      extraSearchContainer?.classList.remove(styles.height_0)
     else
-      extraSearchContainer?.classList.add('height-0')
+      extraSearchContainer?.classList.add(styles.height_0)
 
     setShowExtraSearch(!showExtraSearch)
   }
 
+  const getIngredietsByIds = (ids: string[], data?: MyOptionTypeInt[]) => {
+    let options: MyOptionTypeInt[] = []
+
+    let source = ingredients;
+    if (data !== undefined)
+      source = data
+
+    ids.forEach(id => {
+      let option = source.find(x => String(x.value) === id);
+      if (option)
+        options.push(option)
+    });
+    return options
+  }
+
+  const submitForm = (e: any) => {
+    e.preventDefault()
+    let formElement = e.target[0].form
+    let formData = new FormData(formElement)
+
+    let keys = Array.from(formData.keys());
+
+    let uniqueKeys = Object.values(keys.reduce((acc, next) => ({
+      ...acc,
+      [next]: next
+    }), {})) as string[];
+
+    var searchParams = new URLSearchParams()
+
+    uniqueKeys.forEach(key => {
+      let values = formData.getAll(key) as string[];
+
+      if ((values.length > 1) || (values.length === 1 && values[0] !== '-1' && values[0] !== '')) {
+        values.forEach(value => {
+          searchParams.append(key, value);
+        });
+      }
+    });
+
+    //setSearchParams(searchParams)
+    navigate('?' + searchParams.toString())
+
+    setShowExtraSearch(false)
+    var extraSearchContainer = document.getElementById(styles.search_container)
+    extraSearchContainer?.classList.add(styles.height_0)
+  }
+
+  useEffect(() => {
+    recipeRefetch()
+
+
+    let time = searchParams.get('time')
+    let timeRadio = document.getElementById(`time-${time}`) as HTMLInputElement;
+
+    if (timeRadio)
+      timeRadio.checked = true;
+    else
+      (document.getElementById(`time--1`) as HTMLInputElement).checked = true;
+
+    let difficult = searchParams.get('difficult')
+    let difficultRadio = document.getElementById(`difficult-${difficult}`) as HTMLInputElement;
+
+    if (difficultRadio)
+      difficultRadio.checked = true;
+    else
+      (document.getElementById(`difficult--1`) as HTMLInputElement).checked = true;
+
+    let hot = searchParams.get('hot')
+    let hotRadio = document.getElementById(`hot-${hot}`) as HTMLInputElement;
+
+    if (hotRadio)
+      hotRadio.checked = true;
+    else
+      (document.getElementById(`hot--1`) as HTMLInputElement).checked = true;
+
+    let recipe_search = searchParams.get('recipe_search')
+    let searchElement = (document.getElementById('recipe_search_field') as HTMLInputElement)
+    console.log(recipe_search)
+    if (searchElement)
+      searchElement.value = recipe_search ?? '';
+
+  }, [searchParams])
+
   let recipeItems = recipes?.map((recipe: RecipeModel, index: number) => {
-    return <a className='recipe_card' href={`recipes/${recipe.id}`} key={index} onClick={(e) => openRecipe(e, recipe.id)} onMouseDown={(e) => startPressTimer(e)} onMouseUp={(e) => clearPressTimer(e.currentTarget)}>
-      <div className='flip-card-inner'>
-        <div className='recipe_preview'>
+    return <a className={styles.recipe_card} href={`recipes/${recipe.id}`} key={index} onClick={(e) => openRecipe(e, recipe.id)} onMouseDown={(e) => startPressTimer(e)} onMouseUp={(e) => clearPressTimer(e.currentTarget)}>
+      <div className={styles.flip_card_inner}>
+        <div className={styles.recipe_preview}>
           <img src={config.apiServer + `image?id=${recipe.finishImage}`} alt={recipe.name} />
           <p>{recipe.name}</p>
         </div>
-        <div className='recipe_info'>
+        <div className={styles.recipe_info}>
           <p>Ингредиенты:</p>
           <p>{getIngredientsText(recipe)}</p>
         </div>
@@ -156,86 +302,96 @@ export function Recipes() {
   })
 
   return (
-    <div id='recipes_container'>
+    <div id={styles.recipes_container}>
       <h3>Поиск</h3>
-      <div className='search_field_recipe'><input type="search" name="recipe_search" id='recipe_search_field' placeholder="Название рецепта" /><button type='submit'><Magnifier width='20px' height='20px' /></button></div>
-      <button id='show_more_button' onClick={handleShowExtra}>Расширенный поиск</button>
-      <div id='search_container' className='height-0'>
-        <h4>Содержит ингредиент</h4>
-        <Select options={ingredients} isMulti name='add_ingredient' placeholder='Выберите ингредиент' styles={mySelectStyle} noOptionsMessage={() => 'Ингредиент не найден'}></Select>
-        <h4>Не содержит ингредиент</h4>
-        <Select options={ingredients} isMulti name='remove_ingredient' placeholder='Выберите ингредиент' styles={mySelectStyle} noOptionsMessage={() => 'Ингредиент не найден'}></Select>
-        <h4>Кухня мира</h4>
-        <Select options={allCuisines} name='nationalCuisine' placeholder='Выберите кухню' styles={mySelectStyle} noOptionsMessage={() => 'Кухня не найдена'}></Select>
-        <h4>Группа</h4>
-        <Select options={groups} name='groups' placeholder='Выберите кухню' styles={mySelectStyle} noOptionsMessage={() => 'Группа не найдена'}></Select>
-        <h4>Время готовки</h4>
-        <div className='selector' id='time_selector'>
-        <label>
-            <input type="radio" name="time" defaultChecked />
-            <span>Любое</span>
-          </label>
-          <label>
-            <input type="radio" name="time" />
-            <span>до 30 мин</span>
-          </label>
-          <label>
-            <input type="radio" name="time" />
-            <span>до 1 часа</span>
-          </label>
-          <label>
-            <input type="radio" name="time" />
-            <span>до 2 часов</span>
-          </label>
-          <label>
-            <input type="radio" name="time" />
-            <span>Более 2 часов</span>
-          </label>
+      <form onSubmit={submitForm}>
+        <div id={styles.search_block}>
+          <div className={styles.search_field_recipe}><input type="search" name="recipe_search" id='recipe_search_field' placeholder="Название рецепта" /><button type='submit'><Magnifier width='20px' height='20px' /></button></div>
+          <input type='button' id={styles.show_more_button} onClick={handleShowExtra} value={'Расширенный поиск'}></input>
+          <div id={styles.search_container} className={styles.height_0}>
+            <h4>Содержит ингредиент</h4>
+            <Select ref={(ref) => setupIngredients(ref, searchParams.getAll('a_ingr'))} options={ingredients} isMulti name='a_ingr' placeholder='Выберите ингредиент' styles={mySelectStyle} noOptionsMessage={() => 'Ингредиент не найден'}></Select>
+            <h4>Не содержит ингредиент</h4>
+            <Select ref={(ref) => setupIngredients(ref, searchParams.getAll('r_ingr'))} options={ingredients} isMulti name='r_ingr' placeholder='Выберите ингредиент' styles={mySelectStyle} noOptionsMessage={() => 'Ингредиент не найден'}></Select>
+            <h4>Кухня мира</h4>
+            <Select ref={(ref) => setupSingleSelect(ref, searchParams.get('n_cuisine') ?? '-1', allCuisines)} options={allCuisines} name='n_cuisine' placeholder='Выберите кухню' styles={mySelectStyle} defaultValue={allCuisines[0]} noOptionsMessage={() => 'Кухня не найдена'}></Select>
+            <h4>Группа</h4>
+            <Select ref={(ref) => setupSingleSelect(ref, searchParams.get('group') ?? '-1', groups)} options={groups} name='group' placeholder='Выберите кухню' styles={mySelectStyle} defaultValue={groups[0]} noOptionsMessage={() => 'Группа не найдена'}></Select>
+            <h4>Время готовки</h4>
+            <div className='selector' id={styles.time_selector}>
+              <label>
+                <input type="radio" name="time" id='time--1' defaultChecked value={-1} />
+                <span>Любое</span>
+              </label>
+              <label>
+                <input type="radio" name="time" id='time-0' value={0} />
+                <span>до 30 мин</span>
+              </label>
+              <label>
+                <input type="radio" name="time" id='time-1' value={1} />
+                <span>до 1 часа</span>
+              </label>
+              <label>
+                <input type="radio" name="time" id='time-2' value={2} />
+                <span>до 2 часов</span>
+              </label>
+              <label>
+                <input type="radio" name="time" id='time-3' value={3} />
+                <span>Более 2 часов</span>
+              </label>
+            </div>
+            <h4>Сложность</h4>
+            <div className='selector' id={styles.difficult_selector}>
+              <label>
+                <input type="radio" name="difficult" id='difficult--1' defaultChecked value={-1} />
+                <span>Любая</span>
+              </label>
+              <label>
+                <input type="radio" name="difficult" id='difficult-0' value={0} />
+                <span>Легкая</span>
+              </label>
+              <label>
+                <input type="radio" name="difficult" id='difficult-1' value={1} />
+                <span>Средняя</span>
+              </label>
+              <label>
+                <input type="radio" name="difficult" id='difficult-2' value={2} />
+                <span>Тяжелая</span>
+              </label>
+            </div>
+            <h4>Острота</h4>
+            <div className='selector' id={styles.hot_selector}>
+              <label>
+                <input type="radio" name="hot" id='hot--1' defaultChecked value={-1} />
+                <span>Любая</span>
+              </label>
+              <label>
+                <input type="radio" name="hot" id='hot-0' value={0} />
+                <span>Не острое</span>
+              </label>
+              <label>
+                <input type="radio" name="hot" id='hot-1' value={1} />
+                <span>Немного острое</span>
+              </label>
+              <label>
+                <input type="radio" name="hot" id='hot-2' value={2} />
+                <span>Средней остроты</span>
+              </label>
+              <label>
+                <input type="radio" name="hot" id='hot-3' value={3} />
+                <span>Очень острое</span>
+              </label>
+            </div>
+            <button type="submit" className={`button ${styles.margin_top}`}>Найти</button>
+          </div>
         </div>
-        <h4>Сложность</h4>
-        <div className='selector' id='difficult_selector'>
-          <label>
-            <input type="radio" name="difficult" defaultChecked />
-            <span>Любая</span>
-          </label>
-          <label>
-            <input type="radio" name="difficult" />
-            <span>Легкая</span>
-          </label>
-          <label>
-            <input type="radio" name="difficult" />
-            <span>Средняя</span>
-          </label>
-          <label>
-            <input type="radio" name="difficult" />
-            <span>Тяжелая</span>
-          </label>
+      </form>
+      <h3>{searchHeader}</h3>
+      {recipeItems?.length > 0 ?
+        <div id={styles.recipes_grid}>
+          {recipeItems}
         </div>
-        <h4>Острота</h4>
-        <div className='selector' id='hot_selector'>
-          <label>
-            <input type="radio" name="hot" defaultChecked />
-            <span>Любая</span>
-          </label>
-          <label>
-            <input type="radio" name="hot" />
-            <span>Немного острое</span>
-          </label>
-          <label>
-            <input type="radio" name="hot" />
-            <span>Средней остроты</span>
-          </label>
-          <label>
-            <input type="radio" name="hot" />
-            <span>Очень острое</span>
-          </label>
-        </div>
-      </div>
-      <h3>Все рецепты</h3>
-
-      <div id='recipes_grid'>
-        {recipeItems}
-      </div>
+        : 'По вашему запросу ничего не найдено'}
     </div>
   );
   //}
