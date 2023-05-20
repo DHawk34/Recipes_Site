@@ -6,7 +6,6 @@ import { Home } from './components/HomePage/Home';
 import { Recipes } from './components/RecipesPage/Recipes';
 import { NotFound } from './components/NotFoundPage/NotFound';
 import { AddRecipe } from './components/AddRecipePage/AddRecipe';
-import { Search } from './components/SearchPage/Search';
 import { Recipe } from './components/RecipePage/Recipe';
 export class App extends React.Component {
   render(): React.ReactNode {
@@ -19,7 +18,6 @@ export class App extends React.Component {
           <Route path='/home' element={<Home />} />
           <Route path='/recipes' element={<Recipes />} />
           <Route path='/recipes/:id' element={<Recipe />} />
-          <Route path='/search' element={<Search />} />
           <Route path='/recipes/new' element={<AddRecipe />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

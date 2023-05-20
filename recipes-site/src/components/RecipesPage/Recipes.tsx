@@ -64,7 +64,7 @@ export function Recipes() {
 
   //ingredients
 
-  const { data: ingredientsFromServerResponse, isSuccess: ingredientsSuccess } = useQuery('ingredients', () => fetchData('ingredients'), {
+  const { data: ingredientsFromServerResponse } = useQuery('ingredients', () => fetchData('ingredients'), {
   });
 
 
