@@ -3,6 +3,7 @@
     width: 85%;
     margin: auto;
     margin-top: 20px;
+    margin-bottom: 20px;
     border-radius: 15px;
     padding: 20px;
     display: flex;
@@ -44,7 +45,24 @@
 
 .search_field_recipe>input {
     width: 100%;
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    font-size: 1em;
+    border-radius: 8px;
+    border-width: 1px;
+    margin-right: 15px;
+    border-color: gray;
     /* max-width: 250px; */
+}
+
+.search_field_recipe > button{
+    background-color: var(--btn-alt-main-color);
+}
+
+.search_field_recipe > button:hover{
+    background-color: var(--btn-alt-second-color);
 }
 
 .ingredient_select {

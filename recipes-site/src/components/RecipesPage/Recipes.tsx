@@ -49,7 +49,7 @@ export function Recipes() {
 
 
   //recipes
-  const { data: recipesFromServerResponse, refetch: recipeRefetch } = useQuery('recipes', fetchRecipe);
+  const { data: recipesFromServerResponse, refetch: recipeRefetch } = useQuery(['recipes', searchParams.toString()], fetchRecipe);
   var recipes: Array<RecipeModel> = recipesFromServerResponse
   //groups
   const { data: groupsFromServerResponse } = useQuery('groups', () => fetchData('recipe-groups'), {
@@ -153,7 +153,7 @@ export function Recipes() {
 
   useEffect(() => {
     if (myState != null && myState.myState.refresh) {
-      console.log('reset')
+      // console.log('reset')
       resetStates()
     }
 
@@ -280,7 +280,7 @@ export function Recipes() {
 
     let recipe_search = searchParams.get('recipe_search')
     let searchElement = (document.getElementById('recipe_search_field') as HTMLInputElement)
-    console.log(recipe_search)
+    // console.log(recipe_search)
     if (searchElement)
       searchElement.value = recipe_search ?? '';
 
@@ -306,7 +306,7 @@ export function Recipes() {
       <h3>Поиск</h3>
       <form onSubmit={submitForm}>
         <div id={styles.search_block}>
-          <div className={styles.search_field_recipe}><input type="search" name="recipe_search" id='recipe_search_field' placeholder="Название рецепта" /><button type='submit'><Magnifier width='20px' height='20px' /></button></div>
+          <div className={styles.search_field_recipe}><input type="search" name="recipe_search" id='recipe_search_field' placeholder="Название рецепта" /><button className='button' type='submit'><Magnifier width='20px' height='20px' /></button></div>
           <input type='button' id={styles.show_more_button} onClick={handleShowExtra} value={'Расширенный поиск'}></input>
           <div id={styles.search_container} className={styles.height_0}>
             <h4>Содержит ингредиент</h4>
@@ -348,7 +348,7 @@ export function Recipes() {
               </label>
               <label>
                 <input type="radio" name="difficult" id='difficult-0' value={0} />
-                <span>Легкая</span>
+                <span>Низкая</span>
               </label>
               <label>
                 <input type="radio" name="difficult" id='difficult-1' value={1} />
@@ -356,7 +356,7 @@ export function Recipes() {
               </label>
               <label>
                 <input type="radio" name="difficult" id='difficult-2' value={2} />
-                <span>Тяжелая</span>
+                <span>Высокая</span>
               </label>
             </div>
             <h4>Острота</h4>

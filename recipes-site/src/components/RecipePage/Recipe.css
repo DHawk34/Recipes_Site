@@ -49,6 +49,7 @@ table {
 }
 
 .ingredient_name {
+    color: inherit;
     text-decoration: underline;
 }
 
@@ -101,6 +102,12 @@ table {
 
 .underline{
     text-decoration: underline;
+}
+
+.link{
+    color: inherit;
+    margin: 17.6px;
+    margin-left: 5px;
 }
 
 .clickable:hover{

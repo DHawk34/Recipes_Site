@@ -72,8 +72,6 @@ app.MapGet("/cuisines", async (NationalCuisineRepository repo) =>
 app.MapPost("/recipe/add", async (HttpRequest request, HttpContext context, CustomRecipe recipe, RecipeService recipeService) =>
 {
     return await recipeService.AddNewRecipeAsync(recipe);
-    //var a = files[0];
-    //var b = recipe;
 });
 
 app.MapGet("/image", async (long id, ImagesRepository imagesRepo) =>
@@ -98,6 +96,21 @@ app.MapGet("/recipe", async (long id, RecipeRepository repo) =>
 app.MapGet("/recipe/search", async (string? name, long[]? a_ingr, long[]? r_ingr, long? n_cuisine, long? group, long? time, long? difficult, long? hot, RecipeService repo) =>
 {
     return await repo.SearchRecipesAsync(name, a_ingr, r_ingr, n_cuisine, group, time, difficult, hot);
+});
+
+app.MapGet("/catalog/groups", async (RecipeRepository repo) =>
+{
+    return await repo.GetGroupsCatalogAsync();
+});
+
+app.MapGet("/catalog/cuisines", async (RecipeRepository repo) =>
+{
+    return await repo.GetNationalCuisineCatalogAsync();
+});
+
+app.MapGet("/catalog/news", async (int count, RecipeRepository repo) =>
+{
+    return await repo.GetNewsCatalogAsync(count);
 });
 
 app.Run();

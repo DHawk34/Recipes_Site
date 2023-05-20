@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import './NavPanel.css';
-import { NavLink } from 'react-router-dom';
+import styles from './NavPanel.module.css';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { SpoonAndFork } from '../icons/spoonAndFork';
 import { Magnifier } from '../icons/magnifier';
 import { Hamburger } from '../icons/hamburger';
@@ -8,12 +8,13 @@ import { Cross } from '../icons/cross';
 
 export function NavPanel() {
   const [clicked, setClicked] = useState<boolean>(false);
+  const navigate = useNavigate();
 
   function getButtons() {
     return <>
       {/* <NavLink className='button nav_button' to={'/search'}>Расширенный поиск</NavLink> */}
-      <NavLink className='button nav_button' to={'/recipes'} onClick={hideMenu} state={{ myState: { refresh: true } }}>Рецепты</NavLink>
-      <NavLink className='button nav_button' to={'/recipes/new'} onClick={hideMenu}>Добавить рецепт</NavLink>
+      <NavLink className={`button ${styles.nav_button}`} to={'/recipes'} onClick={hideMenu} state={{ myState: { refresh: true } }}>Рецепты</NavLink>
+      <NavLink className={`button ${styles.nav_button}`} to={'/recipes/new'} onClick={hideMenu}>Добавить рецепт</NavLink>
     </>
   }
 
@@ -25,44 +26,53 @@ export function NavPanel() {
 
   const handleClick = () => {
     setClicked(!clicked)
-    var container = document.getElementById('mobile_nav_container');
-    var background = document.getElementById('nav_background');
+    var container = document.getElementById(styles.mobile_nav_container);
+    var background = document.getElementById(styles.nav_background);
     if (clicked) {
-      container?.classList.add('width-0')
-      background?.classList.add('hidden')
+      container?.classList.add(styles.width_0)
+      background?.classList.add(styles.hidden)
     }
     else {
-      container?.classList.remove('width-0')
-      background?.classList.remove('hidden')
+      container?.classList.remove(styles.width_0)
+      background?.classList.remove(styles.hidden)
     }
   }
 
   const hideMenu = () => {
-    var mobile = document.getElementById('mobile');
-    if (!mobile?.classList.contains('hidden')) {
+    var mobile = document.getElementById(styles.mobile);
+    if (!mobile?.classList.contains(styles.hidden)) {
       setClicked(false)
-      var container = document.getElementById('mobile_nav_container');
-      var background = document.getElementById('nav_background');
-      container?.classList.add('width-0')
-      background?.classList.add('hidden')
+      var container = document.getElementById(styles.mobile_nav_container);
+      var background = document.getElementById(styles.nav_background);
+      container?.classList.add(styles.width_0)
+      background?.classList.add(styles.hidden)
     }
   }
 
+  const searchRecipe = (e?: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e && e.key !== 'Enter')
+      return;
+
+    let searchInput = document.getElementById('recipe_search_field') as HTMLInputElement
+    navigate(`/recipes?recipe_search=${searchInput.value}`)
+  }
+
   return (
-    <div id='nav_container'>
-      <div id='mobile'>
-        <button id='menu_icon' onClick={handleClick}>
+    <div id={styles.nav_container}>
+      <div id={styles.mobile}>
+        <button id={styles.menu_icon} onClick={handleClick}>
           {clicked ? <Cross width='35px' height='35px' /> : <Hamburger width='35px' height='35px' />}
         </button>
 
-        <div id='nav_background' className='hidden' onClick={handleClick}></div>
-        <div id='mobile_nav_container' className='width-0'>
+        <div id={styles.nav_background} className={styles.hidden} onClick={handleClick}></div>
+        <div id={styles.mobile_nav_container} className={styles.width_0}>
           {getButtons()}
         </div>
       </div>
 
-      <NavLink className='button nav_button' to={'/home'} id='mainMenuButton'><SpoonAndFork width='35px' height='35px' /></NavLink><div className='search_field'><input type="search" name="recipe_search" placeholder="Найти рецепт" /><button type='submit'><Magnifier width='20px' height='20px' /></button></div>
-      <div id='pc'>
+      <NavLink className={`button ${styles.nav_button}`} to={'/home'} id={styles.mainMenuButton}><SpoonAndFork width='35px' height='35px' /></NavLink>
+      <div className={styles.search_field}><input type="search" name={styles.recipe_search} placeholder="Найти рецепт" id='recipe_search_field' onKeyDown={searchRecipe} /><button className='button' type='submit' onClick={() => searchRecipe}><Magnifier width='20px' height='20px' /></button></div>
+      <div id={styles.pc}>
         {getButtons()}
       </div>
     </div>

@@ -8,20 +8,21 @@ import { Fire } from '../icons/fire';
 import { Clock } from '../icons/clock';
 import { EarthPlanet } from '../icons/earthPlanet';
 import { useQuery } from 'react-query';
+import { Link } from 'react-router-dom';
 
 export function Recipe() {
     // const [recipe, setRecipe] = useState<RecipeModel>();
-    const [ingredients, setIngredients] = useState<{ name: string, amountPerOne: number }[]>();
+    const [ingredients, setIngredients] = useState<{ id: number, name: string, amountPerOne: number }[]>();
     const [portionCount, setPortionCount] = useState<number>(1);
 
     const params = useParams()
     const recipeId = params.id;
 
     const navigate = useNavigate();
-    
+
     //recipes
-    const { data: recipeFromServerResponse } = useQuery(`recipe`, () => fetchData(`recipe?id=${recipeId}`));
-    var recipe: RecipeModel = recipeFromServerResponse
+    const { data: recipeFromServerResponse, isLoading: recipeLoading } = useQuery(`recipe-${recipeId}`, () => fetchData(`recipe?id=${recipeId}`));
+    let recipe: RecipeModel = recipeFromServerResponse
 
     const fetchData = async (method: string) => {
         return fetch(config.apiServer + method)
@@ -30,27 +31,20 @@ export function Recipe() {
                 navigate('*')
             })
     }
-    
-    // useEffect(() => {
-    //     // console.log("reload")
-    //     const request = new XMLHttpRequest();
-    //     request.open("GET", config.apiServer + `recipe?id=${recipeId}`);
-    //     request.responseType = 'json';
-    //     request.send();
 
-    //     request.onload = () => {
-    //         var recipeFromServer: RecipeModel = request.response
-    //         setRecipe(recipeFromServer)
-    //         setPortionCount(recipeFromServer.portionCount)
-    //         let ingredientsArr: { name: string, amountPerOne: number }[] = [];
-    //         recipeFromServer?.recipeIngredients.forEach(ingr => {
-    //             ingredientsArr.push({ name: ingr.ingredientNavigation.name, amountPerOne: ingr.amount / recipeFromServer.portionCount })
-    //         });
-    //         setIngredients(ingredientsArr);
-    //         document.title = recipeFromServer.name;
-    //     }
+    useEffect(() => {
+        if (!recipe)
+            return
 
-    // }, [recipeId]);
+        setPortionCount(recipe.portionCount)
+        let ingredientsArr: { id: number, name: string, amountPerOne: number }[] = [];
+        recipe?.recipeIngredients.forEach(ingr => {
+            ingredientsArr.push({ id: ingr.ingredient, name: ingr.ingredientNavigation.name, amountPerOne: ingr.amount / recipe.portionCount })
+        });
+        setIngredients(ingredientsArr);
+        document.title = recipe.name;
+
+    }, [recipe])
 
     function getCookTime() {
         var time = recipe?.cookTime.split(':');
@@ -68,9 +62,9 @@ export function Recipe() {
         return finalStr.trim();
     }
 
-    let ingredientsElements = ingredients?.map((ingredient: { name: string, amountPerOne: number }, index: number) => {
+    let ingredientsElements = ingredients?.map((ingredient: { id: number, name: string, amountPerOne: number }, index: number) => {
         return <tr key={index}>
-            <td className='ingredient_name'>{ingredient.name}</td>
+            <td> <Link className='ingredient_name' to={`/recipes?a_ingr=${ingredient.id}`}>{ingredient.name}</Link></td>
             <td>{ingredient.amountPerOne !== 0 ? Math.round(ingredient.amountPerOne * portionCount * 10) / 10 + ' гр' : 'по вкусу'}</td>
         </tr>
     })
@@ -121,7 +115,9 @@ export function Recipe() {
                         <div className='dish_info_block'>
                             <div className='horizontal'>
                                 <EarthPlanet width='30px' height='30px'></EarthPlanet>
-                                <p className='underline clickable'>{recipe.nationalCuisineNavigation.name}</p>
+                                {recipe.nationalCuisineNavigation ?
+                                    <Link className='underline clickable link' to={`/recipes?n_cuisine=${recipe.nationalCuisineNavigation.id}`}>{recipe.nationalCuisineNavigation.name}</Link>
+                                    : <p>Не указано</p>}
                             </div>
                             <p>Кухня</p>
                         </div>
@@ -135,7 +131,7 @@ export function Recipe() {
                     </table>
                     <div className='horizontal'>
                         <h4 className='margin-0 margin-right'>Порции</h4>
-                        <button className='button increment_button' onClick={() => setPortionCount(portionCount - 1)}>-</button>
+                        <button className='button increment_button' onClick={() => setPortionCount(portionCount - 1 >= 1 ? portionCount - 1 : portionCount)}>-</button>
                         <p className='info_field'>{portionCount}</p>
                         <button className='button increment_button' onClick={() => setPortionCount(portionCount + 1)}>+</button>
                     </div>

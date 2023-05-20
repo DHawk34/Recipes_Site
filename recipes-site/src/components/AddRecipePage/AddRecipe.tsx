@@ -11,6 +11,7 @@ import CreatableSelect from 'react-select/creatable';
 import { SelectStyle } from '../../styles';
 import IdNameModel from '../../models/idNameModel';
 import { useQuery } from 'react-query';
+import { useNavigate } from 'react-router-dom';
 
 type MyOptionTypeInt = {
     label: string;
@@ -36,12 +37,13 @@ export function AddRecipe() {
     const [finishedDishImage, setFinishDishImage] = useState<File | undefined>(undefined);
     const [selectedIngredients, setSelectedIngredients] = useState<{ name: string, amount: number }[]>([]);
     const [instruction_steps, setInstructionStep] = useState<{ instruction: string | undefined, image: File | undefined }[]>([{ instruction: undefined, image: undefined }]);
-    //groups
-
+    const navigate = useNavigate();
+    
     var ingredientNameSelect: any = null;
     var groupSelect: any = null;
     var nationalCuisineSelect: any = null;
-
+    
+    //groups
     const { data: groupsFromServerResponse } = useQuery('groups', () => fetchData('recipe-groups'));
     var groups: MyOptionTypeInt[] = [];
 
@@ -72,7 +74,6 @@ export function AddRecipe() {
     });
 
     useEffect(() => {
-
         document.title = 'Добавление рецепта'
 
         window.addEventListener("beforeunload", onUnload);
@@ -240,6 +241,11 @@ export function AddRecipe() {
         const request = new XMLHttpRequest();
         request.open("POST", config.apiServer + "recipe/add");
         request.send(formData);
+
+        request.onload = () => {
+            console.log(request.response)
+            navigate('/recipes/' + request.response)
+        }
         //request.send(JSON.stringify(postRequest));
     }
 

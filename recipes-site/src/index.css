@@ -20,11 +20,15 @@ code {
 }
 
 :root{
-  --btn-main-color: #dededf;
-  --btn-second-color: lightgray;
-  --btn-nav-color: brown;
+  --btn-main-color: #7ccf98;
+  --btn-second-color: #56c57b;
+  --btn-nav-color: #2e874c;
+
+  --btn-alt-main-color: #dededf;
+  --btn-alt-second-color: lightgray;
+  --btn-alt-nav-color: inherit;
+
   --bg-color: #dededf;
   --light-gray: #eaeaea;
   --very-light-gray: #f5f5f5;
-
 }
