@@ -1,7 +1,6 @@
 import React from "react";
 
 type MyProps = {
-    // using `interface` is also ok
     width: string,
     height: string
 };

@@ -34,6 +34,15 @@
 
 table {
     width: 100%;
+    table-layout: fixed;
+}
+
+.ingr_name_col{
+    width: 80%;
+}
+
+.ingr_amount_col{
+    width: 20%;
 }
 
 .info_field {
@@ -90,6 +99,19 @@ table {
     flex-direction: column;
     gap: 10px;
 }*/
+#recipe_name{
+    margin-bottom: 5px;
+}
+
+.inregient_amount{
+    text-align: start;
+    align-content: start;
+}
+
+#group_text{
+    color: gray;
+    margin: 0;
+}
 
 .instruction_step {
     display: flex;
@@ -157,5 +179,13 @@ table {
     #dish_info {
         grid-template-columns: repeat(2, 1fr);
         grid-template-rows: repeat(2, 1fr);
+    }
+
+    .ingr_name_col{
+        width: 70%;
+    }
+    
+    .ingr_amount_col{
+        width: 30%;
     }
 }

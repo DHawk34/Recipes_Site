@@ -4,6 +4,7 @@ import config from '../../config.json'
 import RecipeModel from '../../models/recipeModel';
 import { useQuery } from 'react-query';
 import { Link, NavLink } from 'react-router-dom';
+import { addMeta } from '../../utils/utils';
 
 export function Home() {
 
@@ -14,6 +15,8 @@ export function Home() {
 
   useEffect(() => {
     document.title = 'Главная'
+    addMeta('description', 'Главная')
+    addMeta('keywords', 'новинки, кухни мира, группы рецептов')
   }, [])
   //groups
   const { data: recipesCatalogFromServerResponse } = useQuery('catalog_groups', () => fetchData('catalog/groups'));

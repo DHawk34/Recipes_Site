@@ -12,6 +12,7 @@ import { SelectStyle } from '../../styles';
 import IdNameModel from '../../models/idNameModel';
 import { useQuery } from 'react-query';
 import { useNavigate } from 'react-router-dom';
+import { addMeta } from '../../utils/utils';
 
 type MyOptionTypeInt = {
     label: string;
@@ -38,11 +39,11 @@ export function AddRecipe() {
     const [selectedIngredients, setSelectedIngredients] = useState<{ name: string, amount: number }[]>([]);
     const [instruction_steps, setInstructionStep] = useState<{ instruction: string | undefined, image: File | undefined }[]>([{ instruction: undefined, image: undefined }]);
     const navigate = useNavigate();
-    
+
     var ingredientNameSelect: any = null;
     var groupSelect: any = null;
     var nationalCuisineSelect: any = null;
-    
+
     //groups
     const { data: groupsFromServerResponse } = useQuery('groups', () => fetchData('recipe-groups'));
     var groups: MyOptionTypeInt[] = [];
@@ -75,6 +76,8 @@ export function AddRecipe() {
 
     useEffect(() => {
         document.title = 'Добавление рецепта'
+        addMeta('description', 'Добавление рецепта')
+        addMeta('keywords', 'Новинки')
 
         window.addEventListener("beforeunload", onUnload);
         return () => {
@@ -103,8 +106,15 @@ export function AddRecipe() {
 
     const addIngredient = () => {
         var ingredientName = ingredientNameSelect.getValue() as { label: string, value: string }[]
-        if (ingredientName.length === 0)
+        if (ingredientName.length === 0){
+            alert('Введите название ингердиента!')
             return
+        }
+
+        if(selectedIngredients.find(x => x.name === ingredientName[0].value)){
+            alert('Данный ингредиент уже выбран!')
+            return
+        }
 
         var ingredientAmount = document.getElementById('ingredient_amount') as HTMLInputElement;
         let new_list = [...selectedIngredients, { name: ingredientName[0].value, amount: Number(ingredientAmount.value) }];
@@ -152,14 +162,24 @@ export function AddRecipe() {
         });
     }
 
-    const validateTextInput = (target: HTMLInputElement | HTMLTextAreaElement) => {
-        if (target.value === '')
-            target.classList.add('incorrect_input')
+    const validateInputField = (target: HTMLInputElement | HTMLTextAreaElement, targetId?: string, testValue?: string | null | undefined) => {
+        let value = testValue ? testValue : target.value;
+
+        if (value === '') {
+            if (targetId)
+                document.getElementById(targetId)?.classList.add('incorrect_input')
+            else
+                target.classList.add('incorrect_input')
+        }
 
     }
 
-    const clearValidate = (target: HTMLInputElement | HTMLTextAreaElement) => {
-        target.classList.remove('incorrect_input')
+    const clearValidate = (target: HTMLInputElement | HTMLTextAreaElement, targetId?: string) => {
+        console.log(target)
+        if (targetId)
+            document.getElementById(targetId)?.classList.remove('incorrect_input')
+        else
+            target.classList.remove('incorrect_input')
     }
 
     const insertInstructionText = (index: number, text: string) => {
@@ -171,15 +191,24 @@ export function AddRecipe() {
     const sendRecipe = async () => {
         var name = (document.getElementById(`recipe_name`) as HTMLInputElement).value;
 
-        if (name === '')
+        if (name === '') {
+            (document.getElementById(`recipe_name`) as HTMLInputElement)?.scrollIntoView(false)
+            alert('Заполните название рецепта!')
             return
+        }
 
-        if (finishedDishImage === undefined)
+        if (finishedDishImage === undefined) {
+            document.getElementsByClassName('finished_dish').item(0)?.scrollIntoView(false)
+            alert('Загрузите фотографию готового блюда!')
             return
+        }
 
         var group = groupSelect.getValue() as MyOptionTypeInt[]
-        if (group.length === 0)
+        if (group.length === 0) {
+            document.getElementById('group_input_field')?.scrollIntoView(false)
+            alert('Выберите группу для рецепта!')
             return
+        }
 
         var groupId = group[0].value;
 
@@ -191,8 +220,10 @@ export function AddRecipe() {
 
         var difficult = Number((document.querySelector('input[name="difficult"]:checked') as HTMLInputElement).value);
 
-        if (difficult === undefined)
+        if (difficult === undefined) {
+            alert('Выберите сложность!')
             return;
+        }
 
         var hot = Number((document.querySelector('input[name="hot"]:checked') as HTMLInputElement)?.value);
         if (hot === null)
@@ -200,17 +231,25 @@ export function AddRecipe() {
 
         var cookHours = Number((document.getElementById(`cook_time_hours`) as HTMLInputElement).value);
         var cookMinutes = Number((document.getElementById(`cook_time_minutes`) as HTMLInputElement).value);
-        if (cookMinutes === 0 && cookHours === 0)
+        if (cookMinutes === 0 && cookHours === 0) {
+            document.getElementById(`cook_time_hours`)?.scrollIntoView()
+            alert('Укажите правильное время готовки!')
             return
+        }
 
         var cookTime = `${cookHours}:${cookMinutes}`
 
         var portionCount = Number((document.getElementById(`portion_сount`) as HTMLInputElement).value);
-        if (portionCount === 0)
+        if (portionCount === 0){
+            document.getElementById('portion_сount')?.scrollIntoView(false)
+            alert('Укажите правильное количество порций!')
             return
+        }
 
-        if (selectedIngredients.length === 0)
+        if (selectedIngredients.length === 0){
+            alert('Добавьте ингредиенты!')
             return
+        }
 
         const formData = new FormData();
 
@@ -230,8 +269,11 @@ export function AddRecipe() {
         }
 
         for (var element of instruction_steps) {
-            if (element.image === undefined || element.instruction === undefined)
+            if (element.image === undefined || element.instruction === undefined){
+                document.getElementsByClassName('instruction').item(0)?.scrollIntoView(false);
+                alert('Заполните пропуски в инструкции!')
                 return
+            }
             formData.append('instruction_steps_image', element.image)
             formData.append('instruction_steps', element.instruction)
         }
@@ -246,15 +288,43 @@ export function AddRecipe() {
             console.log(request.response)
             navigate('/recipes/' + request.response)
         }
-        //request.send(JSON.stringify(postRequest));
+        request.onerror = () =>[
+            alert('Ошибка при добавлении рецепта')
+        ]
     }
 
     const incrementPortionCount = (increment: number) => {
         var element = document.getElementById('portion_сount') as HTMLInputElement;
         var portionCount = Number(element.value);
         portionCount += increment;
-        element.value = portionCount.toString();
+
+        if (portionCount >= 1)
+            element.value = portionCount.toString();
     }
+
+    const validateInputNumper = (e: React.ChangeEvent<HTMLInputElement>, min?: number, max?: number) => {
+        let value = e.target.value;
+        e.target.value = value.replace(/([^0-9.]+)/, min ? min.toString() : '');
+
+        if (min !== undefined) {
+            if (Number(e.target.value) < min) {
+                e.target.value = min.toString()
+            }
+        }
+        else {
+            if (e.target.value === '0')
+                e.target.value = '1';
+        }
+
+        if (max) {
+            if (Number(e.target.value) > max)
+                e.target.value = max.toString()
+        }
+
+        //e.target.value = Math.abs(value);
+    }
+
+    const blockInvalidChar = (e: React.KeyboardEvent<HTMLInputElement>) => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault();
 
     let ingredientsElements = selectedIngredients.map((item: { name: string; amount: number; }, index: number) => {
         return <div className='ingredient_container' key={index}>
@@ -284,7 +354,7 @@ export function AddRecipe() {
                         </section>
                     )}
                 </Dropzone>
-                <textarea id={`instruction_step_${index}`} name={`instruction_step_${index}`} placeholder='Например: Помыть овощи' required onFocus={(e) => clearValidate(e.target)} onBlur={(e) => { validateTextInput(e.target); insertInstructionText(index, e.target.value) }}></textarea>
+                <textarea id={`instruction_step_${index}`} name={`instruction_step_${index}`} placeholder='Например: Помыть овощи' required onFocus={(e) => clearValidate(e.target)} onBlur={(e) => { validateInputField(e.target); insertInstructionText(index, e.target.value) }}></textarea>
             </div>
         </div>
     })
@@ -308,9 +378,9 @@ export function AddRecipe() {
                 )}
             </Dropzone>
             <p>Название рецепта <sup className='red'>*</sup></p>
-            <input className='input_field' id='recipe_name' name='recipe_name' type='text' placeholder='Например: Салат "Оливье"' required onFocus={(e) => clearValidate(e.target)} onBlur={(e) => validateTextInput(e.target)}></input>
+            <input className='input_field' id='recipe_name' name='recipe_name' type='text' placeholder='Например: Салат "Оливье"' required onFocus={(e) => clearValidate(e.target)} onBlur={(e) => validateInputField(e.target)}></input>
             <p>Группа <sup className='red'>*</sup></p>
-            <Select ref={(ref) => groupSelect = ref} options={groups} name='recipe_group' id='select_input_field' classNamePrefix='select_input_field_prefix' placeholder='Выберите группу' styles={mySelectStyle} noOptionsMessage={() => 'Такой группы нет'}></Select>
+            <Select ref={(ref) => groupSelect = ref} options={groups} name='recipe_group' id='group_input_field' classNamePrefix='select_input_field_prefix' placeholder='Выберите группу' styles={mySelectStyle} onFocus={(e) => clearValidate(e.target, 'group_input_field')} onBlur={(e) => validateInputField(e.target, 'group_input_field', e.target.parentNode?.parentNode?.firstChild?.textContent !== 'Выберите группу' ? e.target.parentNode?.parentNode?.firstChild?.textContent : '')} noOptionsMessage={() => 'Такой группы нет'}></Select>
             <p>Национальная кухня</p>
             <CreatableSelect ref={(ref) => nationalCuisineSelect = ref} options={allCuisines} name='national_cuisine' id='national_cuisine' classNamePrefix='select_input_field_prefix' placeholder='Например: Русская' formatCreateLabel={(userInput) => `Добавить "${userInput}"`} styles={mySelectStyleString} noOptionsMessage={() => 'Уже выбрано'} />
             {/* <input className='input_field' id='national_cuisine' type='text' name='national_cuisine' placeholder='Например: русская'></input> */}
@@ -351,16 +421,16 @@ export function AddRecipe() {
 
             <p>Время приготовления <sup className='red'>*</sup></p>
             <div className='horizontal'>
-                <input className='input_number' id='cook_time_hours' type='number' name='cook_time_hours' defaultValue={0} required></input>
+                <input className='input_number' id='cook_time_hours' type='number' name='cook_time_hours' defaultValue={0} required onChange={(e) => validateInputNumper(e, 0, 100)} onKeyDown={blockInvalidChar}></input>
                 <label htmlFor="cook_time_hours" id='cook_time_hours_label'>&nbsp;&nbsp;часов</label>
 
-                <input className='input_number' id='cook_time_minutes' type='number' name='cook_time_minutes' defaultValue={0} required></input>
+                <input className='input_number' id='cook_time_minutes' type='number' name='cook_time_minutes' defaultValue={0} required onChange={(e) => validateInputNumper(e, 0, 59)} onKeyDown={blockInvalidChar}></input>
                 <label htmlFor="cook_time_minutes">&nbsp;&nbsp;минут</label>
             </div>
             <p>Порции <sup className='red'>*</sup></p>
             <div className='horizontal'>
                 <button className='button increment_button' onClick={() => incrementPortionCount(-1)}>-</button>
-                <input className='input_number' id='portion_сount' type='number' name='portion_сount' defaultValue={1} required></input>
+                <input className='input_number' id='portion_сount' type='number' name='portion_сount' defaultValue={1} min={1} onChange={validateInputNumper} onKeyDown={blockInvalidChar} required></input>
                 <button className='button increment_button' onClick={() => incrementPortionCount(1)}>+</button>
             </div>
 
@@ -370,7 +440,7 @@ export function AddRecipe() {
             </div>
 
             <hr />
-            <CreatableSelect ref={(ref) => ingredientNameSelect = ref} options={allIngredients} name='ingredient_name' id='select_input_field' classNamePrefix='select_input_field_prefix' placeholder='Например: Курица' styles={mySelectStyleString} formatCreateLabel={(userInput) => `Добавить "${userInput}"`} noOptionsMessage={() => 'Уже выбрано'} />
+            <CreatableSelect ref={(ref) => ingredientNameSelect = ref} options={allIngredients} name='ingredient_name' id='group_input_field' classNamePrefix='select_input_field_prefix' placeholder='Например: Курица' styles={mySelectStyleString} formatCreateLabel={(userInput) => `Добавить "${userInput}"`} noOptionsMessage={() => 'Уже выбрано'} />
             <div className='horizontal'>
                 <input className='half_width input_number left_text margin_top' id='ingredient_amount' type='number' name='ingredient_amount' placeholder='Количество'></input>
                 <label htmlFor="ingredient_amount" className='half_width margin_top'>&nbsp;&nbsp;грамм</label>

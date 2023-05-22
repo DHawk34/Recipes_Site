@@ -9,6 +9,7 @@ import { Clock } from '../icons/clock';
 import { EarthPlanet } from '../icons/earthPlanet';
 import { useQuery } from 'react-query';
 import { Link } from 'react-router-dom';
+import { addMeta } from '../../utils/utils';
 
 export function Recipe() {
     // const [recipe, setRecipe] = useState<RecipeModel>();
@@ -38,13 +39,20 @@ export function Recipe() {
 
         setPortionCount(recipe.portionCount)
         let ingredientsArr: { id: number, name: string, amountPerOne: number }[] = [];
+        let ingrString = '';
         recipe?.recipeIngredients.forEach(ingr => {
             ingredientsArr.push({ id: ingr.ingredient, name: ingr.ingredientNavigation.name, amountPerOne: ingr.amount / recipe.portionCount })
+            ingrString += ingr.ingredientNavigation.name + ', ';
         });
         setIngredients(ingredientsArr);
-        document.title = recipe.name;
 
+        document.title = recipe.name;
+        addMeta('description', recipe.name)
+        addMeta('keywords', ingrString)
+        
     }, [recipe])
+
+
 
     function getCookTime() {
         var time = recipe?.cookTime.split(':');
@@ -65,7 +73,7 @@ export function Recipe() {
     let ingredientsElements = ingredients?.map((ingredient: { id: number, name: string, amountPerOne: number }, index: number) => {
         return <tr key={index}>
             <td> <Link className='ingredient_name' to={`/recipes?a_ingr=${ingredient.id}`}>{ingredient.name}</Link></td>
-            <td>{ingredient.amountPerOne !== 0 ? Math.round(ingredient.amountPerOne * portionCount * 10) / 10 + ' гр' : 'по вкусу'}</td>
+            <td className='inregient_amount'>{ingredient.amountPerOne !== 0 ? Math.round(ingredient.amountPerOne * portionCount * 10) / 10 + ' гр' : 'по вкусу'}</td>
         </tr>
     })
 
@@ -86,9 +94,10 @@ export function Recipe() {
             {recipe ? (
                 <>
                     <img id='finish_image' src={config.apiServer + `image?id=${recipe.finishImage}`} alt={recipe.name} />
-                    <h2>{recipe.name}</h2>
+                    <h2 id='recipe_name'>{recipe.name}</h2>
+                    <Link id='group_text' className='underline clickable link' to={`/recipes?group=${recipe.groupNavigation.id}`}>{recipe.groupNavigation.name}</Link>
 
-                    <h3 className='margin-top-40'>Общая информация</h3>
+                    <h3>Общая информация</h3>
 
                     <div id='dish_info'>
                         <div className='dish_info_block'>
@@ -100,14 +109,14 @@ export function Recipe() {
                         </div>
                         <div className='dish_info_block'>
                             <div className='horizontal'>
-                                <Star width='30px' height='30px'></Star>
+                                <Star width='30px' height='30px' color='gold'></Star>
                                 <p>{recipe.difficult}/5</p>
                             </div>
                             <p>Сложность</p>
                         </div>
                         <div className='dish_info_block'>
                             <div className='horizontal'>
-                                <Fire width='30px' height='30px'></Fire>
+                                <Fire width='30px' height='30px' color='brown'></Fire>
                                 <p>{recipe.hot}/5</p>
                             </div>
                             <p>Острота</p>
@@ -125,6 +134,10 @@ export function Recipe() {
 
                     <h3 className='margin-top-40'>Ингредиенты</h3>
                     <table id='ingredient_table'>
+                        <colgroup>
+                            <col className="ingr_name_col" />
+                            <col className="ingr_amount_col" />
+                        </colgroup>
                         <tbody>
                             {ingredientsElements}
                         </tbody>

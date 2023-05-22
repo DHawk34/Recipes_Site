@@ -53,13 +53,9 @@
 input[type=number]::-webkit-outer-spin-button,
 input[type=number]::-webkit-inner-spin-button {
     -webkit-appearance: none;
-    -moz-appearance: textfield;
+    /* -moz-appearance: textfield; */
 }
 
-input[type=number] {
-    -moz-appearance: textfield;
-    /* Firefox */
-}
 
 .half_width {
     width: 50%;
@@ -75,6 +71,8 @@ input[type=number] {
 
 .left_text {
     text-align: start;
+    padding-left: 10px;
+    padding-right: 10px;
 }
 
 .instruction {
@@ -291,6 +289,8 @@ input[type="text"] {
 
 
 .incorrect_input {
+    border-radius: 8px;
+    outline: 1px solid red;
     border-color: red;
 }
 

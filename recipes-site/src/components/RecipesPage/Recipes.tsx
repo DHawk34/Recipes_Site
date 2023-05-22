@@ -8,6 +8,8 @@ import Select from 'react-select';
 import { SelectStyle } from '../../styles';
 import { useQuery } from 'react-query';
 import IdNameModel from '../../models/idNameModel';
+import { Clock } from '../icons/clock';
+import { addMeta } from '../../utils/utils';
 
 // type MyState = {
 //   recipes: Array<Recipe>,
@@ -158,6 +160,8 @@ export function Recipes() {
     }
 
     document.title = 'Рецепты'
+    addMeta('description', 'Рецепты')
+    addMeta('keywords', 'выпечка, гарниры, вторые блюда, супы, сладости, напитки')
   }, [myState]);
 
   const getIngredientsText = (recipe: RecipeModel) => {
@@ -168,6 +172,22 @@ export function Recipes() {
 
     finalStr = finalStr.slice(0, -2)
     return finalStr
+  }
+
+  const getCookTime = (recipe: RecipeModel) => {
+    var time = recipe?.cookTime.split(':');
+    if (!time)
+      return `-`
+
+    let hours = time[0]
+    let minutes = time[1]
+    let finalStr = '';
+    if (hours !== '0')
+      finalStr += hours + ' ч '
+    if (minutes !== '0')
+      finalStr += minutes + ' м'
+
+    return finalStr.trim();
   }
 
   const openRecipe = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>, recipeId: number) => {
@@ -290,7 +310,12 @@ export function Recipes() {
     return <a className={styles.recipe_card} href={`recipes/${recipe.id}`} key={index} onClick={(e) => openRecipe(e, recipe.id)} onMouseDown={(e) => startPressTimer(e)} onMouseUp={(e) => clearPressTimer(e.currentTarget)}>
       <div className={styles.flip_card_inner}>
         <div className={styles.recipe_preview}>
-          <img src={config.apiServer + `image?id=${recipe.finishImage}`} alt={recipe.name} />
+          <div className={styles.recipe_img_container}>
+            <img src={config.apiServer + `image?id=${recipe.finishImage}`} alt={recipe.name} />
+            <div className={styles.recipe_time + ' horizontal'}>
+              <Clock height='15px' width='15px'></Clock><p>&nbsp;{getCookTime(recipe)}</p>
+            </div>
+          </div>
           <p>{recipe.name}</p>
         </div>
         <div className={styles.recipe_info}>
