@@ -4,17 +4,17 @@ import './Recipe.css';
 import config from '../../config.json'
 import RecipeModel from '../../models/recipeModel';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Star } from '../icons/star';
-import { Fire } from '../icons/fire';
-import { Clock } from '../icons/clock';
-import { EarthPlanet } from '../icons/earthPlanet';
+import { ReactComponent as Star} from '@/assets/star.svg';
+import { ReactComponent as Fire} from '@/assets/fire.svg';
+import { ReactComponent as Clock} from '@/assets/clock.svg';
+import { ReactComponent as EarthPlanet} from '@/assets/earthPlanet.svg';
 import { useQuery } from 'react-query';
 import { Link } from 'react-router-dom';
 import { addMeta } from '../../utils/utils';
-import { Printer } from '../icons/printer';
+import { ReactComponent as Printer} from '@/assets/printer.svg';
 import { useCookies } from 'react-cookie';
-import { Trashcan } from '../icons/trashcan';
-import { Pencil } from '../icons/pencil';
+import { ReactComponent as Trashcan} from '@/assets/trashcan.svg';
+import { ReactComponent as Pencil} from '@/assets/pencil.svg';
 
 export function Recipe() {
     // const [recipe, setRecipe] = useState<RecipeModel>();
@@ -161,7 +161,7 @@ export function Recipe() {
                     <Link id='group_text' className='underline clickable link' to={`/recipes?group=${recipe.groupNavigation.id}`}>{recipe.groupNavigation.name}</Link>
 
                     <div className='print_hide margin_top' id='buttons_menu'>
-                        <button className='button_inv' title="Добавить в избранное" onClick={handleFavorite}><Star width='30px' height='30px' color={isFavorite ? "gold" : "transparent"} stroke_width='1px'></Star></button>
+                        <button className='button_inv' title="Добавить в избранное" onClick={handleFavorite}><Star width='30px' height='30px' color={isFavorite ? "gold" : "transparent"} strokeWidth='1px'></Star></button>
                         <button className='button_inv' title='Распечатать рецепт' onClick={handlePrint}><Printer width='30px' height='30px'></Printer></button>
                         <button className='button_inv' title='Изменить рецепт' onClick={editRecipe}><Pencil width='30px' height='30px'></Pencil></button>
                         <button className='button_inv delete_ingredient_button' title='Удалить рецепт' onClick={deleteRecipe}><Trashcan width='30px' height='30px'></Trashcan></button>

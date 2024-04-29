@@ -3,12 +3,12 @@ import styles from './Recipes.module.css'
 import config from '../../config.json'
 import RecipeModel from '../../models/recipeModel';
 import { useLocation, useNavigate, useSearchParams, useMatch } from 'react-router-dom';
-import { Magnifier } from '../icons/magnifier';
+import { ReactComponent as Magnifier} from '@/assets/magnifier.svg';
 import Select from 'react-select';
 import { SelectStyle } from '../../styles';
 import { useQuery } from 'react-query';
 import IdNameModel from '../../models/idNameModel';
-import { Clock } from '../icons/clock';
+import { ReactComponent as Clock} from '@/assets/clock.svg';
 import { addMeta } from '../../utils/utils';
 import { redirect } from "react-router-dom";
 import { useCookies } from 'react-cookie';
@@ -154,7 +154,7 @@ export function Recipes() {
           url.searchParams.append('r_ids', element)
         });
 
-      if (!favoriteDishes || favoriteDishes.length == 0)
+      if (!favoriteDishes || favoriteDishes.length === 0)
         url.searchParams.append('r_ids', '-1')
     }
 

@@ -1,10 +1,10 @@
 import { SetStateAction, useEffect, useState } from 'react';
 import './AddRecipe.css';
 import Dropzone from 'react-dropzone';
-import { Trashcan } from '../icons/trashcan';
-import { Star } from '../icons/star';
-import { Fire } from '../icons/fire';
-import { Refresh } from '../icons/refresh';
+import { ReactComponent as Trashcan} from '@/assets/trashcan.svg';
+import { ReactComponent as Star} from '@/assets/star.svg';
+import { ReactComponent as Fire} from '@/assets/fire.svg';
+import { ReactComponent as Refresh} from '@/assets/refresh.svg';
 import config from '../../config.json'
 import Select, { MultiValue, SingleValue } from 'react-select';
 import { ActionMeta } from 'react-select';
@@ -180,7 +180,7 @@ export function AddRecipe() {
     }
 
     const handleGroupChange = (selectedOption?: MultiValue<MyOptionTypeInt> | SingleValue<MyOptionTypeInt>) => {
-        if (typeof (selectedOption) == 'number') {
+        if (typeof (selectedOption) === 'number') {
             setGroupOption(groups.at(selectedOption as any));
         }
         else {
@@ -189,7 +189,7 @@ export function AddRecipe() {
     }
 
     const handleCusineChange = (selectedOption?: MultiValue<MyOptionTypeString> | SingleValue<MyOptionTypeString>) => {
-        if (typeof (selectedOption) == 'number') {
+        if (typeof (selectedOption) === 'number') {
             setCuisineOption(allCuisines.at(selectedOption as any));
         }
         else {
@@ -507,15 +507,15 @@ export function AddRecipe() {
                 <p className='margin-right con_width'>Сложность <sup className='red'>*</sup></p>
 
                 <div className='radio_group' id='difficult_group'>
-                    <input type="radio" name="difficult" id="difficult-5" value={5} checked={difficult == 5} onChange={() => setDifficult(5)} />
+                    <input type="radio" name="difficult" id="difficult-5" value={5} checked={difficult === 5} onChange={() => setDifficult(5)} />
                     <label htmlFor="difficult-5"><Star width='30px' height='30px' /></label>
-                    <input type="radio" name="difficult" id="difficult-4" value={4} checked={difficult == 4} onChange={() => setDifficult(4)} />
+                    <input type="radio" name="difficult" id="difficult-4" value={4} checked={difficult === 4} onChange={() => setDifficult(4)} />
                     <label htmlFor="difficult-4"><Star width='30px' height='30px' /></label>
-                    <input type="radio" name="difficult" id="difficult-3" value={3} checked={difficult == 3} onChange={() => setDifficult(3)} />
+                    <input type="radio" name="difficult" id="difficult-3" value={3} checked={difficult === 3} onChange={() => setDifficult(3)} />
                     <label htmlFor="difficult-3"><Star width='30px' height='30px' /></label>
-                    <input type="radio" name="difficult" id="difficult-2" value={2} checked={difficult == 2} onChange={() => setDifficult(2)} />
+                    <input type="radio" name="difficult" id="difficult-2" value={2} checked={difficult === 2} onChange={() => setDifficult(2)} />
                     <label htmlFor="difficult-2"><Star width='30px' height='30px' /></label>
-                    <input type="radio" name="difficult" id="difficult-1" value={1} checked={difficult == 1} onChange={() => setDifficult(1)} />
+                    <input type="radio" name="difficult" id="difficult-1" value={1} checked={difficult === 1} onChange={() => setDifficult(1)} />
                     <label htmlFor="difficult-1"><Star width='30px' height='30px' /></label>
                 </div>
             </div>
@@ -524,15 +524,15 @@ export function AddRecipe() {
                 <p className='margin-right con_width horizontal'>Острота <button id='reset_button' onClick={resetHot}><Refresh width='20px' height='20px' /></button></p>
 
                 <div className='radio_group' id='hot_group'>
-                    <input type="radio" name="hot" id="hot-5" value={5} checked={hot == 5} onChange={() => setHot(5)} />
+                    <input type="radio" name="hot" id="hot-5" value={5} checked={hot === 5} onChange={() => setHot(5)} />
                     <label htmlFor="hot-5"><Fire width='30px' height='30px' /></label>
-                    <input type="radio" name="hot" id="hot-4" value={4} checked={hot == 4} onChange={() => setHot(4)} />
+                    <input type="radio" name="hot" id="hot-4" value={4} checked={hot === 4} onChange={() => setHot(4)} />
                     <label htmlFor="hot-4"><Fire width='30px' height='30px' /></label>
-                    <input type="radio" name="hot" id="hot-3" value={3} checked={hot == 3} onChange={() => setHot(3)} />
+                    <input type="radio" name="hot" id="hot-3" value={3} checked={hot === 3} onChange={() => setHot(3)} />
                     <label htmlFor="hot-3"><Fire width='30px' height='30px' /></label>
-                    <input type="radio" name="hot" id="hot-2" value={2} checked={hot == 2} onChange={() => setHot(2)} />
+                    <input type="radio" name="hot" id="hot-2" value={2} checked={hot === 2} onChange={() => setHot(2)} />
                     <label htmlFor="hot-2"><Fire width='30px' height='30px' /></label>
-                    <input type="radio" name="hot" id="hot-1" value={1} checked={hot == 1} onChange={() => setHot(1)} />
+                    <input type="radio" name="hot" id="hot-1" value={1} checked={hot === 1} onChange={() => setHot(1)} />
                     <label htmlFor="hot-1"><Fire width='30px' height='30px' /></label>
                 </div>
             </div>

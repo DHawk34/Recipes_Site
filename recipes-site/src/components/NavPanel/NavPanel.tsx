@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import styles from './NavPanel.module.css';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { SpoonAndFork } from '../icons/spoonAndFork';
-import { Magnifier } from '../icons/magnifier';
-import { Hamburger } from '../icons/hamburger';
-import { Cross } from '../icons/cross';
+import { ReactComponent as SpoonAndFork} from '@/assets/spoonAndFork.svg';
+import { ReactComponent as Magnifier} from '@/assets/magnifier.svg';
+import { ReactComponent as Hamburger} from '@/assets/hamburger.svg';
+import { ReactComponent as Cross} from '@/assets/cross.svg';
 
 export function NavPanel() {
   const [clicked, setClicked] = useState<boolean>(false);
