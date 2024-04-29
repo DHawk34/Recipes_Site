@@ -17,7 +17,9 @@ export class App extends React.Component {
           <Route path='/' element={<Navigate to='/home' />} />
           <Route path='/home' element={<Home />} />
           <Route path='/recipes' element={<Recipes />} />
+          <Route path='/recipes/favorite' element={<Recipes />} />
           <Route path='/recipes/:id' element={<Recipe />} />
+          <Route path='/recipes/:id/edit' element={<AddRecipe />} />
           <Route path='/recipes/new' element={<AddRecipe />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

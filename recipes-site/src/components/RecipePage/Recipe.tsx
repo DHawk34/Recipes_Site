@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { useReactToPrint } from 'react-to-print';
 import './Recipe.css';
 import config from '../../config.json'
 import RecipeModel from '../../models/recipeModel';
@@ -10,11 +11,17 @@ import { EarthPlanet } from '../icons/earthPlanet';
 import { useQuery } from 'react-query';
 import { Link } from 'react-router-dom';
 import { addMeta } from '../../utils/utils';
+import { Printer } from '../icons/printer';
+import { useCookies } from 'react-cookie';
+import { Trashcan } from '../icons/trashcan';
+import { Pencil } from '../icons/pencil';
 
 export function Recipe() {
     // const [recipe, setRecipe] = useState<RecipeModel>();
     const [ingredients, setIngredients] = useState<{ id: number, name: string, amountPerOne: number }[]>();
     const [portionCount, setPortionCount] = useState<number>(1);
+    const [cookies, setCookie, removeCookie] = useCookies(['favoriteDishes']);
+    const [isFavorite, setFavorite] = useState(false);
 
     const params = useParams()
     const recipeId = params.id;
@@ -22,7 +29,7 @@ export function Recipe() {
     const navigate = useNavigate();
 
     //recipes
-    const { data: recipeFromServerResponse, isLoading: recipeLoading } = useQuery(`recipe-${recipeId}`, () => fetchData(`recipe?id=${recipeId}`));
+    const { data: recipeFromServerResponse } = useQuery(`recipe-${recipeId}`, () => fetchData(`recipe?id=${recipeId}`));
     let recipe: RecipeModel = recipeFromServerResponse
 
     const fetchData = async (method: string) => {
@@ -32,10 +39,63 @@ export function Recipe() {
                 navigate('*')
             })
     }
+    const componentRef = useRef(null);
+    const reactToPrintContent = React.useCallback(() => {
+        return componentRef.current;
+    }, [componentRef.current]);
+
+    const handlePrint = useReactToPrint({
+        content: reactToPrintContent,
+        documentTitle: "Рецепт-" + recipe?.name,
+        removeAfterPrint: true
+    });
+
+    const handleFavorite = () => {
+        var favoriteDishes = cookies['favoriteDishes'] as number[];
+        if (!favoriteDishes)
+            favoriteDishes = [];
+
+        console.log(favoriteDishes);
+        if (isFavorite) {
+            var index = favoriteDishes.indexOf(recipe.id);
+            favoriteDishes.splice(index, 1);
+            setCookie("favoriteDishes", favoriteDishes, { path: '/', maxAge: 1707109200 });
+        }
+        else {
+            favoriteDishes.push(recipe.id);
+            setCookie("favoriteDishes", favoriteDishes, { path: '/', maxAge: 1707109200 });
+        }
+
+        setFavorite(!isFavorite);
+    }
+
+    const deleteRecipe = () => {
+        if (window.confirm('Действительно удалить рецепт?')) {
+            fetch(config.apiServer + `recipe/delete?id=${recipeId}`, { method: 'DELETE' })
+                .then(() => {
+                    alert('Рецепт успешно удалён')
+                    navigate('/recipes')
+                })
+                .catch(e => {
+                    alert('Ошибка удаления')
+                })
+        }
+    }
+
+    const editRecipe = () => {
+        navigate('edit')
+    }
 
     useEffect(() => {
         if (!recipe)
             return
+
+        function compareIndexFound(a: { step: number; instructionImage: number; instructionText: string; }, b: { step: number; instructionImage: number; instructionText: string; }) {
+            if (a.step < b.step) { return -1; }
+            if (a.step > b.step) { return 1; }
+            return 0;
+        }
+        recipe?.recipeInstructions.sort(compareIndexFound)
 
         setPortionCount(recipe.portionCount)
         let ingredientsArr: { id: number, name: string, amountPerOne: number }[] = [];
@@ -47,12 +107,15 @@ export function Recipe() {
         setIngredients(ingredientsArr);
 
         document.title = recipe.name;
-        addMeta('description', recipe.name)
-        addMeta('keywords', ingrString)
-        
+        addMeta('description', recipe.name);
+        addMeta('keywords', ingrString);
+
+        var favoriteDishes = cookies['favoriteDishes'] as number[];
+
+        if (favoriteDishes?.includes(recipe.id)) {
+            setFavorite(true);
+        }
     }, [recipe])
-
-
 
     function getCookTime() {
         var time = recipe?.cookTime.split(':');
@@ -90,13 +153,19 @@ export function Recipe() {
     })
 
     return (
-        <div id='recipe_container'>
+        <div id='recipe_container' ref={componentRef}>
             {recipe ? (
                 <>
                     <img id='finish_image' src={config.apiServer + `image?id=${recipe.finishImage}`} alt={recipe.name} />
                     <h2 id='recipe_name'>{recipe.name}</h2>
                     <Link id='group_text' className='underline clickable link' to={`/recipes?group=${recipe.groupNavigation.id}`}>{recipe.groupNavigation.name}</Link>
 
+                    <div className='print_hide margin_top' id='buttons_menu'>
+                        <button className='button_inv' title="Добавить в избранное" onClick={handleFavorite}><Star width='30px' height='30px' color={isFavorite ? "gold" : "transparent"} stroke_width='1px'></Star></button>
+                        <button className='button_inv' title='Распечатать рецепт' onClick={handlePrint}><Printer width='30px' height='30px'></Printer></button>
+                        <button className='button_inv' title='Изменить рецепт' onClick={editRecipe}><Pencil width='30px' height='30px'></Pencil></button>
+                        <button className='button_inv delete_ingredient_button' title='Удалить рецепт' onClick={deleteRecipe}><Trashcan width='30px' height='30px'></Trashcan></button>
+                    </div>
                     <h3>Общая информация</h3>
 
                     <div id='dish_info'>
@@ -144,12 +213,12 @@ export function Recipe() {
                     </table>
                     <div className='horizontal'>
                         <h4 className='margin-0 margin-right'>Порции</h4>
-                        <button className='button increment_button' onClick={() => setPortionCount(portionCount - 1 >= 1 ? portionCount - 1 : portionCount)}>-</button>
+                        <button className='button increment_button print_hide' onClick={() => setPortionCount(portionCount - 1 >= 1 ? portionCount - 1 : portionCount)}>-</button>
                         <p className='info_field'>{portionCount}</p>
-                        <button className='button increment_button' onClick={() => setPortionCount(portionCount + 1)}>+</button>
+                        <button className='button increment_button print_hide' onClick={() => setPortionCount(portionCount + 1)}>+</button>
                     </div>
 
-                    <h3>Пошаговая инструкция</h3>
+                    <h3 className='pagebreak print_margin_top'>Пошаговая инструкция</h3>
                     {instructionElements}
                 </>
             ) : null}

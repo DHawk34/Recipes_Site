@@ -17,6 +17,28 @@
   background-color: var(--btn-main-color);
 }
 
+.button_inv {
+  background-color: transparent;
+  box-sizing: border-box;
+  border-radius: 8px;
+  text-align: center;
+  padding: 2px;
+  border: none;
+  font-size: 1em;
+}
+
+.button_inv:hover {
+  background-color: transparent;
+  cursor: pointer;
+}
+
+.button_inv:active {
+  background-color: transparent;
+}
+
+.hidden{
+  visibility: hidden;
+}
 
 .increment_button {
   border-radius: 50%;

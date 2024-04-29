@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import styles from './Recipes.module.css'
 import config from '../../config.json'
 import RecipeModel from '../../models/recipeModel';
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams, useMatch } from 'react-router-dom';
 import { Magnifier } from '../icons/magnifier';
 import Select from 'react-select';
 import { SelectStyle } from '../../styles';
@@ -10,6 +10,8 @@ import { useQuery } from 'react-query';
 import IdNameModel from '../../models/idNameModel';
 import { Clock } from '../icons/clock';
 import { addMeta } from '../../utils/utils';
+import { redirect } from "react-router-dom";
+import { useCookies } from 'react-cookie';
 
 // type MyState = {
 //   recipes: Array<Recipe>,
@@ -28,7 +30,9 @@ export function Recipes() {
 
   // const [recipes, setRecipes] = useState(Array<RecipeModel>());
   const [showExtraSearch, setShowExtraSearch] = useState<boolean>(false);
-  const [searchHeader, setHeader] = useState<string>('Все рецепты')
+  const [cookies, setCookie, removeCookie] = useCookies(['favoriteDishes']);
+  const match = useMatch('/recipes/:fav');
+  const [searchHeader, setHeader] = useState<string>(match ? 'Избранное' : 'Все рецепты')
 
   const timerRef = useRef<NodeJS.Timeout>();
   const isLongPress = useRef<boolean>();
@@ -37,13 +41,20 @@ export function Recipes() {
 
   const myState = location.state
   const [searchParams, setSearchParams] = useSearchParams();
+  const favoriteDishes = cookies["favoriteDishes"] as string[];
+
 
   function resetStates() {
     setShowExtraSearch(false)
     var extraSearchContainer = document.getElementById(styles.search_container)
     extraSearchContainer?.classList.add(styles.height_0)
 
-    setHeader('Все рецепты')
+    if (match) {
+      setHeader('Избранное')
+    }
+    else {
+      setHeader('Все рецепты')
+    }
     recipeRefetch()
   }
   // let addIngredientSelect: any = null;
@@ -53,6 +64,7 @@ export function Recipes() {
   //recipes
   const { data: recipesFromServerResponse, refetch: recipeRefetch } = useQuery(['recipes', searchParams.toString()], fetchRecipe);
   var recipes: Array<RecipeModel> = recipesFromServerResponse
+
   //groups
   const { data: groupsFromServerResponse } = useQuery('groups', () => fetchData('recipe-groups'), {
   });
@@ -136,6 +148,16 @@ export function Recipes() {
     if (Array.from(url.searchParams).length > 0)
       setHeader('Результаты поиска')
 
+    if (match != null) {
+      if (favoriteDishes)
+        favoriteDishes?.forEach(element => {
+          url.searchParams.append('r_ids', element)
+        });
+
+      if (!favoriteDishes || favoriteDishes.length == 0)
+        url.searchParams.append('r_ids', '-1')
+    }
+
     return fetch(url)
       .then(res => res.json())
   }
@@ -194,7 +216,9 @@ export function Recipes() {
     e.preventDefault()
     if (isLongPress.current)
       return;
-    navigate(`${recipeId}`)
+
+    //return redirect(`recipes/${recipeId}`);
+    navigate(`/recipes/${recipeId}`)
   }
 
   const startPressTimer = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
@@ -307,7 +331,7 @@ export function Recipes() {
   }, [searchParams])
 
   let recipeItems = recipes?.map((recipe: RecipeModel, index: number) => {
-    return <a className={styles.recipe_card} href={`recipes/${recipe.id}`} key={index} onClick={(e) => openRecipe(e, recipe.id)} onMouseDown={(e) => startPressTimer(e)} onMouseUp={(e) => clearPressTimer(e.currentTarget)}>
+    return <a className={styles.recipe_card} href={`${recipe.id}`} key={index} onClick={(e) => openRecipe(e, recipe.id)} onMouseDown={(e) => startPressTimer(e)} onMouseUp={(e) => clearPressTimer(e.currentTarget)}>
       <div className={styles.flip_card_inner}>
         <div className={styles.recipe_preview}>
           <div className={styles.recipe_img_container}>
@@ -416,7 +440,7 @@ export function Recipes() {
         <div id={styles.recipes_grid}>
           {recipeItems}
         </div>
-        : 'По вашему запросу ничего не найдено'}
+        : favoriteDishes?.length > 0 ? 'По вашему запросу ничего не найдено' : 'Нет избранных рецептов'}
     </div>
   );
   //}

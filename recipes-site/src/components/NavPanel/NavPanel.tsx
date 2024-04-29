@@ -13,7 +13,8 @@ export function NavPanel() {
   function getButtons() {
     return <>
       <NavLink className={`button ${styles.nav_button}`} to={'/recipes'} onClick={hideMenu} state={{ myState: { refresh: true } }}>Рецепты</NavLink>
-      <NavLink className={`button ${styles.nav_button}`} to={'/recipes/new'} onClick={hideMenu}>Добавить рецепт</NavLink>
+      <NavLink className={`button ${styles.nav_button}`} to={'/recipes/favorite'} onClick={hideMenu} state={{ myState: { refresh: true } }}>Избранное</NavLink>
+      <NavLink className={`button ${styles.nav_button}`} to={'/recipes/new'} onClick={hideMenu} state={{ myState: { refresh: true } }}>Добавить рецепт</NavLink>
     </>
   }
 
@@ -50,6 +51,12 @@ export function NavPanel() {
     navigate(`/recipes?recipe_search=${searchInput.value}`)
   }
 
+  const searchRecipeButt = () => {
+    console.log('fire')
+    let searchInput = document.getElementById('recipe_search_field') as HTMLInputElement
+    navigate(`/recipes?recipe_search=${searchInput.value}`)
+  }
+
   return (
     <div id={styles.nav_container}>
       <div id={styles.mobile}>
@@ -64,7 +71,7 @@ export function NavPanel() {
       </div>
 
       <NavLink className={`button ${styles.nav_button}`} to={'/home'} id={styles.mainMenuButton}><SpoonAndFork width='35px' height='35px' /></NavLink>
-      <div className={styles.search_field}><input type="search" name={styles.recipe_search} placeholder="Найти рецепт" id='recipe_search_field' onKeyDown={searchRecipe} /><button className='button' type='submit' onClick={() => searchRecipe}><Magnifier width='20px' height='20px' /></button></div>
+      <div className={styles.search_field}><input type="search" name={styles.recipe_search} placeholder="Найти рецепт" id='recipe_search_field' onKeyDown={searchRecipe} /><button className='button' type='submit' onClick={searchRecipeButt}><Magnifier width='20px' height='20px' /></button></div>
       <div id={styles.pc}>
         {getButtons()}
       </div>

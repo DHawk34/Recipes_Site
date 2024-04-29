@@ -20,6 +20,12 @@
     aspect-ratio: 7/4;
 }
 
+#buttons_menu{
+    margin-bottom: -10px;
+    display: flex;
+    gap: 10px;
+}
+
 .margin-0 {
     margin: 0;
 }
@@ -37,11 +43,11 @@ table {
     table-layout: fixed;
 }
 
-.ingr_name_col{
+.ingr_name_col {
     width: 80%;
 }
 
-.ingr_amount_col{
+.ingr_amount_col {
     width: 20%;
 }
 
@@ -66,7 +72,7 @@ table {
     cursor: pointer;
 }
 
-#ingredient_table td{
+#ingredient_table td {
     padding-top: 5px;
     padding-bottom: 5px;
 }
@@ -99,16 +105,16 @@ table {
     flex-direction: column;
     gap: 10px;
 }*/
-#recipe_name{
+#recipe_name {
     margin-bottom: 5px;
 }
 
-.inregient_amount{
+.inregient_amount {
     text-align: start;
     align-content: start;
 }
 
-#group_text{
+#group_text {
     color: gray;
     margin: 0;
 }
@@ -116,23 +122,23 @@ table {
 .instruction_step {
     display: flex;
     gap: 10px;
-} 
+}
 
-.margin-top-40{
+.margin-top-40 {
     margin-top: 40px;
 }
 
-.underline{
+.underline {
     text-decoration: underline;
 }
 
-.link{
+.link {
     color: inherit;
     margin: 17.6px;
     margin-left: 5px;
 }
 
-.clickable:hover{
+.clickable:hover {
     cursor: pointer;
 }
 
@@ -161,6 +167,26 @@ table {
     border-radius: 15px;
 }
 
+@media print {
+    div {
+        break-inside: avoid;
+    }
+
+    .pagebreak {
+        page-break-before: always;
+    }
+
+    .print_hide{
+        visibility: hidden;
+        display: none;
+    }
+
+    .print_margin_top{
+        margin-top: 35px;
+        margin-bottom: 0px;
+    }
+}
+
 @media screen and (max-width: 700px) {
     .instruction_step {
         display: flex;
@@ -181,11 +207,11 @@ table {
         grid-template-rows: repeat(2, 1fr);
     }
 
-    .ingr_name_col{
+    .ingr_name_col {
         width: 70%;
     }
-    
-    .ingr_amount_col{
+
+    .ingr_amount_col {
         width: 30%;
     }
 }

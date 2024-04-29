@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { SetStateAction, useEffect, useState } from 'react';
 import './AddRecipe.css';
 import Dropzone from 'react-dropzone';
 import { Trashcan } from '../icons/trashcan';
@@ -6,18 +6,21 @@ import { Star } from '../icons/star';
 import { Fire } from '../icons/fire';
 import { Refresh } from '../icons/refresh';
 import config from '../../config.json'
-import Select from 'react-select';
+import Select, { MultiValue, SingleValue } from 'react-select';
+import { ActionMeta } from 'react-select';
 import CreatableSelect from 'react-select/creatable';
 import { SelectStyle } from '../../styles';
 import IdNameModel from '../../models/idNameModel';
 import { useQuery } from 'react-query';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useMatch, useNavigate } from 'react-router-dom';
 import { addMeta } from '../../utils/utils';
+import RecipeModel from '../../models/recipeModel';
 
 type MyOptionTypeInt = {
     label: string;
     value: number;
 };
+type OnChangeInt = (option: MyOptionTypeInt, actionMeta: ActionMeta<MyOptionTypeInt>) => void;
 
 type MyOptionTypeString = {
     label: string;
@@ -35,14 +38,30 @@ const mySelectStyleString = SelectStyle<MyOptionTypeString>()
 // }
 
 export function AddRecipe() {
+    const match = useMatch('/recipes/:id/:ed');
     const [finishedDishImage, setFinishDishImage] = useState<File | undefined>(undefined);
+    const [groupSelectedOption, setGroupOption] = useState<MyOptionTypeInt | undefined>(undefined);
+    const [nCuisineSelectedOption, setCuisineOption] = useState<MyOptionTypeString | undefined>(undefined);
+    const [hot, setHot] = useState<number>(0);
+    const [hours, setHours] = useState<string>('0');
+    const [minutes, setMinutes] = useState<string>('0');
+    const [difficult, setDifficult] = useState<number>(1);
+    const [portion, setPortion] = useState<number>(1);
     const [selectedIngredients, setSelectedIngredients] = useState<{ name: string, amount: number }[]>([]);
     const [instruction_steps, setInstructionStep] = useState<{ instruction: string | undefined, image: File | undefined }[]>([{ instruction: undefined, image: undefined }]);
+    const [header, setHeader] = useState<string>('Оформление рецепта');
+
+    const location = useLocation()
+    const myState = location.state
+
     const navigate = useNavigate();
 
     var ingredientNameSelect: any = null;
     var groupSelect: any = null;
     var nationalCuisineSelect: any = null;
+
+    const { data: recipeFromServerResponse } = useQuery(`recipe-${match?.params.id}`, () => fetchData(`recipe?id=${match?.params.id}`), { enabled: match != null });
+    let recipe: RecipeModel = recipeFromServerResponse
 
     //groups
     const { data: groupsFromServerResponse } = useQuery('groups', () => fetchData('recipe-groups'));
@@ -75,8 +94,8 @@ export function AddRecipe() {
     });
 
     useEffect(() => {
-        document.title = 'Добавление рецепта'
-        addMeta('description', 'Добавление рецепта')
+        document.title = match ? 'Изменение рецепта' : 'Добавление рецепта'
+        addMeta('description', match ? 'Изменение рецепта' : 'Добавление рецепта')
         addMeta('keywords', 'Новинки')
 
         window.addEventListener("beforeunload", onUnload);
@@ -84,6 +103,99 @@ export function AddRecipe() {
             window.removeEventListener("beforeunload", onUnload);
         }
     }, [])
+
+    useEffect(() => {
+        if (!match || !recipe)
+            return
+
+        function compareIndexFound(a: { step: number; instructionImage: number; instructionText: string; }, b: { step: number; instructionImage: number; instructionText: string; }) {
+            if (a.step < b.step) { return -1; }
+            if (a.step > b.step) { return 1; }
+            return 0;
+        }
+        recipe?.recipeInstructions.sort(compareIndexFound)
+
+        fetch(config.apiServer + `image?id=${recipe.finishImage}`).then(res => res.blob().then((blob) => {
+            // please change the file.extension with something more meaningful
+            // or create a utility function to parse from URL
+            const file = new File([blob], `image`, { type: blob.type })
+            setFinishDishImage(file);
+        }));
+
+        (document.getElementById(`recipe_name`) as HTMLInputElement).value = recipe.name;
+        setGroupOption({ label: recipe.groupNavigation.name, value: recipe.groupNavigation.id });
+        setCuisineOption({ label: recipe.nationalCuisineNavigation.name, value: recipe.nationalCuisineNavigation.name });
+
+        if (recipe.hot > 0)
+            setHot(recipe.hot)
+
+        setDifficult(recipe.difficult)
+        setPortion(recipe.portionCount)
+        let ingredients: { name: string, amount: number }[] = []
+        recipe.recipeIngredients.forEach(ingr => {
+            ingredients.push({ name: ingr.ingredientNavigation.name, amount: ingr.amount })
+        });
+        setSelectedIngredients(ingredients);
+
+        let instructions_step: { instruction: string | undefined, image: File | undefined }[] = []
+
+        recipe.recipeInstructions.forEach(instr => {
+            fetch(config.apiServer + `image?id=${instr.instructionImage}`).then(res => res.blob().then((blob) => {
+                const file = new File([blob], `image`, { type: blob.type })
+                instructions_step.push({ instruction: instr.instructionText, image: file });
+                setInstructionStep(instructions_step);
+            }));
+        });
+
+        var time = recipe.cookTime.split(':');
+
+        let hours = time[0]
+        let minutes = time[1]
+
+        setHours(hours);
+        setMinutes(minutes);
+
+        setHeader('Изменение рецепта')
+        // setInstructionStep(instructions_step);
+
+    }, [recipe])
+
+    useEffect(() => {
+        if (myState != null && myState.myState.refresh) {
+            resetStates()
+        }
+    }, [myState]);
+    function resetStates() {
+        setFinishDishImage(undefined);
+        setGroupOption(undefined);
+        setCuisineOption(undefined);
+        setHot(0);
+        setHours('0');
+        setMinutes('0');
+        setDifficult(1);
+        setPortion(1);
+        setSelectedIngredients([]);
+        setInstructionStep([{ instruction: undefined, image: undefined }]);
+        setHeader('Оформление рецепта');
+    }
+
+    const handleGroupChange = (selectedOption?: MultiValue<MyOptionTypeInt> | SingleValue<MyOptionTypeInt>) => {
+        if (typeof (selectedOption) == 'number') {
+            setGroupOption(groups.at(selectedOption as any));
+        }
+        else {
+            setGroupOption(selectedOption as MyOptionTypeInt);
+        }
+    }
+
+    const handleCusineChange = (selectedOption?: MultiValue<MyOptionTypeString> | SingleValue<MyOptionTypeString>) => {
+        if (typeof (selectedOption) == 'number') {
+            setCuisineOption(allCuisines.at(selectedOption as any));
+        }
+        else {
+            setCuisineOption(selectedOption as MyOptionTypeString);
+        }
+    }
 
     const fetchData = async (method: string) => {
         return fetch(config.apiServer + method)
@@ -106,12 +218,12 @@ export function AddRecipe() {
 
     const addIngredient = () => {
         var ingredientName = ingredientNameSelect.getValue() as { label: string, value: string }[]
-        if (ingredientName.length === 0){
+        if (ingredientName.length === 0) {
             alert('Введите название ингердиента!')
             return
         }
 
-        if(selectedIngredients.find(x => x.name === ingredientName[0].value)){
+        if (selectedIngredients.find(x => x.name === ingredientName[0].value)) {
             alert('Данный ингредиент уже выбран!')
             return
         }
@@ -175,7 +287,7 @@ export function AddRecipe() {
     }
 
     const clearValidate = (target: HTMLInputElement | HTMLTextAreaElement, targetId?: string) => {
-        console.log(target)
+        // console.log(target)
         if (targetId)
             document.getElementById(targetId)?.classList.remove('incorrect_input')
         else
@@ -183,7 +295,7 @@ export function AddRecipe() {
     }
 
     const insertInstructionText = (index: number, text: string) => {
-        let list = instruction_steps
+        let list = [...instruction_steps]
         list[index].instruction = text
         setInstructionStep(list)
     }
@@ -204,33 +316,26 @@ export function AddRecipe() {
         }
 
         var group = groupSelect.getValue() as MyOptionTypeInt[]
-        if (group.length === 0) {
+        if (group.length === 0 || groupSelectedOption == null) {
             document.getElementById('group_input_field')?.scrollIntoView(false)
             alert('Выберите группу для рецепта!')
             return
         }
 
-        var groupId = group[0].value;
+        var groupId = groupSelectedOption.value
 
-        var cuisine = nationalCuisineSelect.getValue() as MyOptionTypeString[]
         var n_cuisine = '';
 
-        if (cuisine.length > 0)
-            n_cuisine = cuisine[0].value;
+        if (nCuisineSelectedOption)
+            n_cuisine = nCuisineSelectedOption.value;
 
-        var difficult = Number((document.querySelector('input[name="difficult"]:checked') as HTMLInputElement).value);
-
-        if (difficult === undefined) {
+        if (difficult < 1) {
             alert('Выберите сложность!')
             return;
         }
 
-        var hot = Number((document.querySelector('input[name="hot"]:checked') as HTMLInputElement)?.value);
-        if (hot === null)
-            hot = 0;
-
-        var cookHours = Number((document.getElementById(`cook_time_hours`) as HTMLInputElement).value);
-        var cookMinutes = Number((document.getElementById(`cook_time_minutes`) as HTMLInputElement).value);
+        var cookHours = Number(hours);
+        var cookMinutes = Number(minutes);
         if (cookMinutes === 0 && cookHours === 0) {
             document.getElementById(`cook_time_hours`)?.scrollIntoView()
             alert('Укажите правильное время готовки!')
@@ -240,13 +345,13 @@ export function AddRecipe() {
         var cookTime = `${cookHours}:${cookMinutes}`
 
         var portionCount = Number((document.getElementById(`portion_сount`) as HTMLInputElement).value);
-        if (portionCount === 0){
+        if (portionCount === 0) {
             document.getElementById('portion_сount')?.scrollIntoView(false)
             alert('Укажите правильное количество порций!')
             return
         }
 
-        if (selectedIngredients.length === 0){
+        if (selectedIngredients.length === 0) {
             alert('Добавьте ингредиенты!')
             return
         }
@@ -269,7 +374,7 @@ export function AddRecipe() {
         }
 
         for (var element of instruction_steps) {
-            if (element.image === undefined || element.instruction === undefined){
+            if (element.image === undefined || element.instruction === undefined) {
                 document.getElementsByClassName('instruction').item(0)?.scrollIntoView(false);
                 alert('Заполните пропуски в инструкции!')
                 return
@@ -281,16 +386,32 @@ export function AddRecipe() {
         formData.append('creation_time', new Date().toISOString())
 
         const request = new XMLHttpRequest();
-        request.open("POST", config.apiServer + "recipe/add");
-        request.send(formData);
 
-        request.onload = () => {
-            console.log(request.response)
-            navigate('/recipes/' + request.response)
+        if (!match) {
+            request.open("POST", config.apiServer + "recipe/add");
+            request.send(formData);
+
+            request.onload = () => {
+                console.log(request.response)
+                navigate('/recipes/' + request.response)
+            }
+            request.onerror = () => [
+                alert('Ошибка при добавлении рецепта')
+            ]
         }
-        request.onerror = () =>[
-            alert('Ошибка при добавлении рецепта')
-        ]
+        else {
+            request.open("PUT", config.apiServer + `recipe/update?id=${match.params.id}`);
+            request.send(formData);
+
+            request.onload = () => {
+                console.log(request.response)
+                navigate('/recipes/' + request.response)
+            }
+            request.onerror = () => [
+                alert('Ошибка при изменении рецепта')
+            ]
+        }
+
     }
 
     const incrementPortionCount = (increment: number) => {
@@ -320,8 +441,6 @@ export function AddRecipe() {
             if (Number(e.target.value) > max)
                 e.target.value = max.toString()
         }
-
-        //e.target.value = Math.abs(value);
     }
 
     const blockInvalidChar = (e: React.KeyboardEvent<HTMLInputElement>) => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault();
@@ -354,7 +473,7 @@ export function AddRecipe() {
                         </section>
                     )}
                 </Dropzone>
-                <textarea id={`instruction_step_${index}`} name={`instruction_step_${index}`} placeholder='Например: Помыть овощи' required onFocus={(e) => clearValidate(e.target)} onBlur={(e) => { validateInputField(e.target); insertInstructionText(index, e.target.value) }}></textarea>
+                <textarea id={`instruction_step_${index}`} name={`instruction_step_${index}`} value={instruction_steps[index].instruction} onChange={(e) => insertInstructionText(index, e.target.value)} placeholder='Например: Помыть овощи' required onFocus={(e) => clearValidate(e.target)} onBlur={(e) => { validateInputField(e.target) }}></textarea>
             </div>
         </div>
     })
@@ -363,7 +482,7 @@ export function AddRecipe() {
 
     return (
         <div id='new_recipe_container'>
-            <h3>Оформление рецепта</h3>
+            <h3>{header}</h3>
             <p>Фотография готового блюда <sup className='red'>*</sup></p>
             <Dropzone onDrop={acceptedFiles => {
                 setFinishDishImage(acceptedFiles[0])
@@ -380,24 +499,23 @@ export function AddRecipe() {
             <p>Название рецепта <sup className='red'>*</sup></p>
             <input className='input_field' id='recipe_name' name='recipe_name' type='text' placeholder='Например: Салат "Оливье"' required onFocus={(e) => clearValidate(e.target)} onBlur={(e) => validateInputField(e.target)}></input>
             <p>Группа <sup className='red'>*</sup></p>
-            <Select ref={(ref) => groupSelect = ref} options={groups} name='recipe_group' id='group_input_field' classNamePrefix='select_input_field_prefix' placeholder='Выберите группу' styles={mySelectStyle} onFocus={(e) => clearValidate(e.target, 'group_input_field')} onBlur={(e) => validateInputField(e.target, 'group_input_field', e.target.parentNode?.parentNode?.firstChild?.textContent !== 'Выберите группу' ? e.target.parentNode?.parentNode?.firstChild?.textContent : '')} noOptionsMessage={() => 'Такой группы нет'}></Select>
+            <Select ref={(ref) => groupSelect = ref} options={groups} onChange={(val) => handleGroupChange(val)} value={groupSelectedOption} name='recipe_group' id='group_input_field' classNamePrefix='select_input_field_prefix' placeholder='Выберите группу' styles={mySelectStyle} onFocus={(e) => clearValidate(e.target, 'group_input_field')} onBlur={(e) => validateInputField(e.target, 'group_input_field', e.target.parentNode?.parentNode?.firstChild?.textContent !== 'Выберите группу' ? e.target.parentNode?.parentNode?.firstChild?.textContent : '')} noOptionsMessage={() => 'Такой группы нет'}></Select>
             <p>Национальная кухня</p>
-            <CreatableSelect ref={(ref) => nationalCuisineSelect = ref} options={allCuisines} name='national_cuisine' id='national_cuisine' classNamePrefix='select_input_field_prefix' placeholder='Например: Русская' formatCreateLabel={(userInput) => `Добавить "${userInput}"`} styles={mySelectStyleString} noOptionsMessage={() => 'Уже выбрано'} />
-            {/* <input className='input_field' id='national_cuisine' type='text' name='national_cuisine' placeholder='Например: русская'></input> */}
+            <CreatableSelect ref={(ref) => nationalCuisineSelect = ref} options={allCuisines} onChange={(val) => handleCusineChange(val)} value={nCuisineSelectedOption} name='national_cuisine' id='national_cuisine' classNamePrefix='select_input_field_prefix' placeholder='Например: Русская' formatCreateLabel={(userInput) => `Добавить "${userInput}"`} styles={mySelectStyleString} noOptionsMessage={() => 'Уже выбрано'} />
 
             <div className='horizontal-center'>
                 <p className='margin-right con_width'>Сложность <sup className='red'>*</sup></p>
 
                 <div className='radio_group' id='difficult_group'>
-                    <input type="radio" name="difficult" id="difficult-5" value={5} />
+                    <input type="radio" name="difficult" id="difficult-5" value={5} checked={difficult == 5} onChange={() => setDifficult(5)} />
                     <label htmlFor="difficult-5"><Star width='30px' height='30px' /></label>
-                    <input type="radio" name="difficult" id="difficult-4" value={4} />
+                    <input type="radio" name="difficult" id="difficult-4" value={4} checked={difficult == 4} onChange={() => setDifficult(4)} />
                     <label htmlFor="difficult-4"><Star width='30px' height='30px' /></label>
-                    <input type="radio" name="difficult" id="difficult-3" value={3} />
+                    <input type="radio" name="difficult" id="difficult-3" value={3} checked={difficult == 3} onChange={() => setDifficult(3)} />
                     <label htmlFor="difficult-3"><Star width='30px' height='30px' /></label>
-                    <input type="radio" name="difficult" id="difficult-2" value={2} />
+                    <input type="radio" name="difficult" id="difficult-2" value={2} checked={difficult == 2} onChange={() => setDifficult(2)} />
                     <label htmlFor="difficult-2"><Star width='30px' height='30px' /></label>
-                    <input type="radio" name="difficult" id="difficult-1" defaultChecked value={1} />
+                    <input type="radio" name="difficult" id="difficult-1" value={1} checked={difficult == 1} onChange={() => setDifficult(1)} />
                     <label htmlFor="difficult-1"><Star width='30px' height='30px' /></label>
                 </div>
             </div>
@@ -406,31 +524,31 @@ export function AddRecipe() {
                 <p className='margin-right con_width horizontal'>Острота <button id='reset_button' onClick={resetHot}><Refresh width='20px' height='20px' /></button></p>
 
                 <div className='radio_group' id='hot_group'>
-                    <input type="radio" name="hot" id="hot-5" value={5} />
+                    <input type="radio" name="hot" id="hot-5" value={5} checked={hot == 5} onChange={() => setHot(5)} />
                     <label htmlFor="hot-5"><Fire width='30px' height='30px' /></label>
-                    <input type="radio" name="hot" id="hot-4" value={4} />
+                    <input type="radio" name="hot" id="hot-4" value={4} checked={hot == 4} onChange={() => setHot(4)} />
                     <label htmlFor="hot-4"><Fire width='30px' height='30px' /></label>
-                    <input type="radio" name="hot" id="hot-3" value={3} />
+                    <input type="radio" name="hot" id="hot-3" value={3} checked={hot == 3} onChange={() => setHot(3)} />
                     <label htmlFor="hot-3"><Fire width='30px' height='30px' /></label>
-                    <input type="radio" name="hot" id="hot-2" value={2} />
+                    <input type="radio" name="hot" id="hot-2" value={2} checked={hot == 2} onChange={() => setHot(2)} />
                     <label htmlFor="hot-2"><Fire width='30px' height='30px' /></label>
-                    <input type="radio" name="hot" id="hot-1" value={1} />
+                    <input type="radio" name="hot" id="hot-1" value={1} checked={hot == 1} onChange={() => setHot(1)} />
                     <label htmlFor="hot-1"><Fire width='30px' height='30px' /></label>
                 </div>
             </div>
 
             <p>Время приготовления <sup className='red'>*</sup></p>
             <div className='horizontal'>
-                <input className='input_number' id='cook_time_hours' type='number' name='cook_time_hours' defaultValue={0} required onChange={(e) => validateInputNumper(e, 0, 100)} onKeyDown={blockInvalidChar}></input>
+                <input className='input_number' id='cook_time_hours' type='number' name='cook_time_hours' value={hours} required onChange={(e) => { validateInputNumper(e, 0, 100); setHours(e.target.value) }} onKeyDown={blockInvalidChar}></input>
                 <label htmlFor="cook_time_hours" id='cook_time_hours_label'>&nbsp;&nbsp;часов</label>
 
-                <input className='input_number' id='cook_time_minutes' type='number' name='cook_time_minutes' defaultValue={0} required onChange={(e) => validateInputNumper(e, 0, 59)} onKeyDown={blockInvalidChar}></input>
+                <input className='input_number' id='cook_time_minutes' type='number' name='cook_time_minutes' value={minutes} required onChange={(e) => { validateInputNumper(e, 0, 59); setMinutes(e.target.value) }} onKeyDown={blockInvalidChar}></input>
                 <label htmlFor="cook_time_minutes">&nbsp;&nbsp;минут</label>
             </div>
             <p>Порции <sup className='red'>*</sup></p>
             <div className='horizontal'>
                 <button className='button increment_button' onClick={() => incrementPortionCount(-1)}>-</button>
-                <input className='input_number' id='portion_сount' type='number' name='portion_сount' defaultValue={1} min={1} onChange={validateInputNumper} onKeyDown={blockInvalidChar} required></input>
+                <input className='input_number' id='portion_сount' type='number' name='portion_сount' min={1} value={portion.toString()} onChange={(e) => { validateInputNumper(e); setPortion(Number(e.target.value)); }} onKeyDown={blockInvalidChar} required></input>
                 <button className='button increment_button' onClick={() => incrementPortionCount(1)}>+</button>
             </div>
 
