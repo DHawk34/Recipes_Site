@@ -18,7 +18,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<RecipesSiteDbContext>(options =>
 {
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
 //builder.Services.AddControllers().AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
@@ -74,7 +74,7 @@ app.MapPost("/recipe/add", async (HttpRequest request, HttpContext context, Cust
     return await recipeService.AddNewRecipeAsync(recipe);
 });
 
-app.MapGet("/image", async (long id, ImagesRepository imagesRepo) =>
+app.MapGet("/image", async (int id, ImagesRepository imagesRepo) =>
 {
     var content = await imagesRepo.GetImageAsync(id);
     if (!content.HasValue)
@@ -88,14 +88,24 @@ app.MapGet("/recipe/all", async (RecipeRepository repo) =>
     return await repo.GetAllAsync();
 });
 
-app.MapGet("/recipe", async (long id, RecipeRepository repo) =>
+app.MapGet("/recipe", async (int id, RecipeRepository repo) =>
 {
     return await repo.GetAsync(id);
 });
 
-app.MapGet("/recipe/search", async (string? name, long[]? a_ingr, long[]? r_ingr, long? n_cuisine, long? group, long? time, long? difficult, long? hot, RecipeService repo) =>
+app.MapDelete("/recipe/delete", async (int id, RecipeService repo) =>
 {
-    return await repo.SearchRecipesAsync(name, a_ingr, r_ingr, n_cuisine, group, time, difficult, hot);
+    return await repo.DeleteAsync(id);
+});
+
+app.MapPut("/recipe/update", async (HttpRequest request, HttpContext context, CustomRecipe recipe, long id, RecipeService recipeService) =>
+{
+    return await recipeService.EditRecipeAsync(id, recipe);
+});
+
+app.MapGet("/recipe/search", async (string? name, int[]? a_ingr, int[]? r_ingr, int? n_cuisine, int? group, long? time, int? difficult, int? hot, int[]? r_ids, RecipeService repo) =>
+{
+    return await repo.SearchRecipesAsync(name, a_ingr, r_ingr, n_cuisine, group, time, difficult, hot, r_ids);
 });
 
 app.MapGet("/catalog/groups", async (RecipeRepository repo) =>

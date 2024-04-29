@@ -6,7 +6,7 @@ namespace Recipes_API.Models;
 
 public partial class Ingredient
 {
-    public long Id { get; set; }
+    public int Id { get; set; }
 
     public string Name { get; set; } = null!;
 

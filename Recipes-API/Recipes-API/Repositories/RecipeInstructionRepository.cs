@@ -12,7 +12,7 @@ public class RecipeInstructionRepository
         this.dbContext = dbContext;
     }
 
-    public async Task AddInstructionStepToRecipeAsync(long recipeId, int step, long image, string instructionText)
+    public async Task AddInstructionStepToRecipeAsync(int recipeId, int step, int image, string instructionText)
     {
         await dbContext.RecipeInstructions.AddAsync(new RecipeInstruction()
         {

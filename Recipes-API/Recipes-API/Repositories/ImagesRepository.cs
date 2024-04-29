@@ -12,7 +12,7 @@ public class ImagesRepository
         this.dbContext = dbContext;
     }
 
-    public async Task<long> AddImageAsync(byte[] image, string contentType)
+    public async Task<int> AddImageAsync(byte[] image, string contentType)
     {
         var newImage = await dbContext.Images.AddAsync(new Image()
         {
@@ -25,7 +25,18 @@ public class ImagesRepository
         return newImage.Entity.Id;
     }
 
-    public async Task<(byte[] data, string contentType)?> GetImageAsync(long id)
+    public async Task<int> EditImageAsync(int id, byte[] image, string contentType)
+    {
+        var imageDb = dbContext.Images.FirstOrDefault(x => x.Id == id);
+        imageDb.Data = image;
+        imageDb.ContentType = contentType;
+        
+        await dbContext.SaveChangesAsync();
+
+        return imageDb.Id;
+    }
+
+    public async Task<(byte[] data, string contentType)?> GetImageAsync(int id)
     {
         var image = await dbContext.Images.FindAsync(id);
         if (image == null)

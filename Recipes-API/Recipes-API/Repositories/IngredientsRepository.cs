@@ -18,7 +18,7 @@ public class IngredientsRepository
         return await dbContext.Ingredients.ToListAsync();
     }
 
-    public async Task<long> GetIdOrAddAsync(string ingredientName)
+    public async Task<int> GetIdOrAddAsync(string ingredientName)
     {
         var n_ingredient = await dbContext.Ingredients.FirstOrDefaultAsync((x) => x.Name == ingredientName);
         if (n_ingredient != null)

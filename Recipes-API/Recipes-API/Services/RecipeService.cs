@@ -31,33 +31,103 @@ public class RecipeService
 
     public async Task<long> AddNewRecipeAsync(CustomRecipe recipe)
     {
-        long? national_cuisine = null;
+        int? national_cuisine = null;
 
-        using var transaction = await dbContext.Database.BeginTransactionAsync();
+        using var transaction = await dbContext.Database.BeginTransactionAsync(); //начало транзакции SQL
 
         if (recipe.nationalCuisine != null)
-            national_cuisine = await nationalCuisineRepo.GetIdOrAddAsync(recipe.nationalCuisine);
+            national_cuisine = await nationalCuisineRepo.GetIdOrAddAsync(recipe.nationalCuisine); //добавление национальной кухни в БД
 
-        var finishDishImageId = await imagesRepo.AddImageAsync(recipe.finishDishImage.data, recipe.finishDishImage.contentType);
-        var recipeId = await recipeRepo.AddNewRecipeAsync(finishDishImageId, recipe.name, recipe.group, national_cuisine, recipe.cookTime, recipe.portionCount, recipe.difficult, recipe.hot, recipe.creation_time);
+        var finishDishImageId = await imagesRepo.AddImageAsync(recipe.finishDishImage.data, recipe.finishDishImage.contentType); //добавление картинки в БД
+        var recipeId = await recipeRepo.AddNewRecipeAsync(finishDishImageId, recipe.name, recipe.group, national_cuisine, recipe.cookTime, recipe.portionCount, recipe.difficult, recipe.hot, recipe.creation_time); //добавление рецепта в БД
 
         foreach (var ingridient in recipe.ingredients)
         {
-            await recipeIngredientsRepo.AddIngredientToRecipeAsync(recipeId, await ingridientsRepo.GetIdOrAddAsync(ingridient.name), ingridient.amount);
+            await recipeIngredientsRepo.AddIngredientToRecipeAsync(recipeId, await ingridientsRepo.GetIdOrAddAsync(ingridient.name), ingridient.amount); //добавление ингредиентов в БД
         }
 
         for (int i = 0; i < recipe.instruction.Length; i++)
         {
             var instructionStep = recipe.instruction[i];
-            var imageId = await imagesRepo.AddImageAsync(instructionStep.image.data, instructionStep.image.contentType);
-            await recipeInstructionRepo.AddInstructionStepToRecipeAsync(recipeId, i + 1, imageId, instructionStep.instruction);
+            var imageId = await imagesRepo.AddImageAsync(instructionStep.image.data, instructionStep.image.contentType); //добавление картинок в БД
+            await recipeInstructionRepo.AddInstructionStepToRecipeAsync(recipeId, i + 1, imageId, instructionStep.instruction); //добавление инструкции в БД
         }
 
-        await transaction.CommitAsync();
+        await transaction.CommitAsync(); //завершение транзакции SQL
         return recipeId;
     }
 
-    public async Task<List<Recipe>> SearchRecipesAsync(string? name, long[]? a_ingr, long[]? r_ingr, long? n_cuisine, long? group, long? time, long? difficult, long? hot)
+    public async Task<long> EditRecipeAsync(long id, CustomRecipe recipe)
+    {
+        var recipeDb = await dbContext.Recipes.FirstOrDefaultAsync(x => x.Id == id);
+
+        using var transaction = await dbContext.Database.BeginTransactionAsync(); //начало транзакции SQL
+
+        var instructions = await dbContext.RecipeInstructions.Where(x => x.Recipe == id).ToArrayAsync();
+        List<long> imageIds = new(instructions.Length);
+        foreach (var inst in instructions)
+        {
+            imageIds.Add(inst.InstructionImage);
+        }
+
+        var images = dbContext.Images.Where(x => imageIds.Contains(x.Id));
+
+        var recipeIngr = await dbContext.RecipeIngredients.Where(x => x.Recipe == id).ToArrayAsync();
+
+        dbContext.RecipeIngredients.RemoveRange(recipeIngr);
+        dbContext.RecipeInstructions.RemoveRange(instructions);
+        dbContext.Images.RemoveRange(images);
+
+        recipeDb.Name = recipe.name;
+        recipeDb.Difficult = recipe.difficult;
+        recipeDb.CookTime = recipe.cookTime;
+        recipeDb.Hot = recipe.hot;
+        recipeDb.Group = recipe.group;
+        recipeDb.NationalCuisine = await nationalCuisineRepo.GetIdOrAddAsync(recipe.nationalCuisine);
+        recipeDb.PortionCount = recipe.portionCount;
+
+        await dbContext.SaveChangesAsync();
+
+        await imagesRepo.EditImageAsync(recipeDb.FinishImage, recipe.finishDishImage.data, recipe.finishDishImage.contentType);
+
+        foreach (var ingridient in recipe.ingredients)
+        {
+            await recipeIngredientsRepo.AddIngredientToRecipeAsync(recipeDb.Id, await ingridientsRepo.GetIdOrAddAsync(ingridient.name), ingridient.amount); //добавление ингредиентов в БД
+        }
+
+        for (int i = 0; i < recipe.instruction.Length; i++)
+        {
+            var instructionStep = recipe.instruction[i];
+            var imageId = await imagesRepo.AddImageAsync(instructionStep.image.data, instructionStep.image.contentType); //добавление картинок в БД
+            await recipeInstructionRepo.AddInstructionStepToRecipeAsync(recipeDb.Id, i + 1, imageId, instructionStep.instruction); //добавление инструкции в БД
+        }
+
+        await transaction.CommitAsync(); //завершение транзакции SQL
+        return recipeDb.Id;
+    }
+
+    public async Task<string> DeleteAsync(long id)
+    {
+        var recipe = await dbContext.Recipes.FirstOrDefaultAsync(x => x.Id == id);
+        var instructions = await dbContext.RecipeInstructions.Where(x => x.Recipe == id).ToArrayAsync();
+        List<long> imageIds = new(instructions.Length + 1);
+        foreach (var inst in instructions)
+        {
+            imageIds.Add(inst.InstructionImage);
+        }
+        imageIds.Add(recipe.FinishImage);
+
+        var images = dbContext.Images.Where(x => imageIds.Contains(x.Id));
+
+        dbContext.RecipeInstructions.RemoveRange(instructions);
+        dbContext.Recipes.Remove(recipe);
+        dbContext.Images.RemoveRange(images);
+
+        var count = await dbContext.SaveChangesAsync();
+        return count > 0 ? "success" : "error";
+    }
+
+    public async Task<List<Recipe>> SearchRecipesAsync(string? name, int[]? a_ingr, int[]? r_ingr, int? n_cuisine, int? group, long? time, int? difficult, int? hot, int[]? r_ids)
     {
         (int hours, int minutes) getTime(string x)
         {
@@ -116,6 +186,11 @@ public class RecipeService
                 default:
                     break;
             }
+        }
+
+        if(r_ids?.Length > 0)
+        {
+            query = query.Where(x => r_ids.Contains(x.Id));
         }
 
         IEnumerable<Recipe> finalQuery = await query.ToListAsync();

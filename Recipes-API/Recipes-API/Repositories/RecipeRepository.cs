@@ -13,7 +13,7 @@ public class RecipeRepository
         this.dbContext = dbContext;
     }
 
-    public async Task<long> AddNewRecipeAsync(long finishDishImage, string name, long group, long? nationalCuisine, string cookTime, int portionCount, int difficult, int hot, string creationTime)
+    public async Task<int> AddNewRecipeAsync(int finishDishImage, string name, int group, int? nationalCuisine, string cookTime, int portionCount, int difficult, int hot, string creationTime)
     {
         var new_recipe = await dbContext.Recipes.AddAsync(new Recipe()
         {

@@ -7,16 +7,17 @@ namespace Recipes_API.Models;
 public partial class RecipeInstruction
 {
     [JsonIgnore]
-    public long Recipe { get; set; }
+    public int Recipe { get; set; }
 
-    public long Step { get; set; }
+    public int Step { get; set; }
 
-    public long InstructionImage { get; set; }
+    public int InstructionImage { get; set; }
 
     public string InstructionText { get; set; } = null!;
 
     [JsonIgnore]
     public virtual Image InstructionImageNavigation { get; set; } = null!;
+
     [JsonIgnore]
     public virtual Recipe RecipeNavigation { get; set; } = null!;
 }

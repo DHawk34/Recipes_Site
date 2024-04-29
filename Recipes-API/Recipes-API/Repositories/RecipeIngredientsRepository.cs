@@ -11,7 +11,7 @@ public class RecipeIngredientsRepository
         this.dbContext = dbContext;
     }
 
-    public async Task AddIngredientToRecipeAsync(long recipeId, long ingredientId, int amount)
+    public async Task AddIngredientToRecipeAsync(int recipeId, int ingredientId, int amount)
     {
         await dbContext.RecipeIngredients.AddAsync(new RecipeIngredient()
         {
@@ -22,7 +22,7 @@ public class RecipeIngredientsRepository
 
         await dbContext.SaveChangesAsync();
     }
-    public List<RecipeIngredient> GetIngredientsFromRecipe(long recipeId)
+    public List<RecipeIngredient> GetIngredientsFromRecipe(int recipeId)
     {
        return dbContext.RecipeIngredients.Where(x => x.Recipe == recipeId).ToList();
     }

@@ -6,25 +6,25 @@ namespace Recipes_API.Models;
 
 public partial class Recipe
 {
-    public long Id { get; set; }
+    public int Id { get; set; }
 
-    public long FinishImage { get; set; }
+    public int FinishImage { get; set; }
 
     public string Name { get; set; } = null!;
 
     [JsonIgnore]
-    public long Group { get; set; }
+    public int Group { get; set; }
 
     [JsonIgnore]
-    public long? NationalCuisine { get; set; }
+    public int? NationalCuisine { get; set; }
 
     public string CookTime { get; set; } = null!;
 
-    public long PortionCount { get; set; }
+    public int PortionCount { get; set; }
 
-    public long Difficult { get; set; }
+    public int Difficult { get; set; }
 
-    public long Hot { get; set; }
+    public int Hot { get; set; }
 
     public string CreationTime { get; set; } = null!;
 
