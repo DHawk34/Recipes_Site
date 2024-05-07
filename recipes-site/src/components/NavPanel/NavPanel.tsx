@@ -5,6 +5,7 @@ import { ReactComponent as SpoonAndFork} from '@/assets/spoonAndFork.svg';
 import { ReactComponent as Magnifier} from '@/assets/magnifier.svg';
 import { ReactComponent as Hamburger} from '@/assets/hamburger.svg';
 import { ReactComponent as Cross} from '@/assets/cross.svg';
+import { ReactComponent as Profile } from '@/assets/profile.svg';
 
 export function NavPanel() {
   const [clicked, setClicked] = useState<boolean>(false);
@@ -75,6 +76,7 @@ export function NavPanel() {
       <div id={styles.pc}>
         {getButtons()}
       </div>
+      <NavLink className={`button ${styles.nav_button}`} to={'/login'} id={styles.profile_button}><Profile width='35px' height='35px'/></NavLink>
     </div>
 
   );
