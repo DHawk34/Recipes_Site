@@ -5,8 +5,8 @@ namespace Recipes_API.Repositories;
 
 public class RecipeIngredientsRepository
 {
-    private readonly RecipesSiteDbContext dbContext;
-    public RecipeIngredientsRepository(RecipesSiteDbContext dbContext)
+    private readonly RecipeSiteContext dbContext;
+    public RecipeIngredientsRepository(RecipeSiteContext dbContext)
     {
         this.dbContext = dbContext;
     }

@@ -7,9 +7,9 @@ namespace Recipes_API.Repositories;
 
 public class NationalCuisineRepository
 {
-    private readonly RecipesSiteDbContext dbContext;
+    private readonly RecipeSiteContext dbContext;
 
-    public NationalCuisineRepository(RecipesSiteDbContext dbContext)
+    public NationalCuisineRepository(RecipeSiteContext dbContext)
     {
         this.dbContext = dbContext;
     }

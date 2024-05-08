@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using Recipes_API.Models;
 
 namespace Recipes_API.Models;
 

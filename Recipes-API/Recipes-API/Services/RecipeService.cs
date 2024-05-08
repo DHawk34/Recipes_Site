@@ -16,9 +16,9 @@ public class RecipeService
     private readonly RecipeIngredientsRepository recipeIngredientsRepo;
     private readonly RecipeInstructionRepository recipeInstructionRepo;
     private readonly ImagesRepository imagesRepo;
-    private readonly RecipesSiteDbContext dbContext;
+    private readonly RecipeSiteContext dbContext;
 
-    public RecipeService(IngredientsRepository ingridientsRepository, RecipesSiteDbContext dbContext, NationalCuisineRepository nationalCuisineRepo, RecipeRepository recipeRepo, RecipeIngredientsRepository recipeIngredientsRepo, RecipeInstructionRepository recipeInstructionRepo, ImagesRepository imagesRepo)
+    public RecipeService(IngredientsRepository ingridientsRepository, RecipeSiteContext dbContext, NationalCuisineRepository nationalCuisineRepo, RecipeRepository recipeRepo, RecipeIngredientsRepository recipeIngredientsRepo, RecipeInstructionRepository recipeInstructionRepo, ImagesRepository imagesRepo)
     {
         this.ingridientsRepo = ingridientsRepository;
         this.dbContext = dbContext;

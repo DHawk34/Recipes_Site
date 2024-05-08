@@ -5,9 +5,9 @@ namespace Recipes_API.Repositories;
 
 public class ImagesRepository
 {
-    private readonly RecipesSiteDbContext dbContext;
+    private readonly RecipeSiteContext dbContext;
 
-    public ImagesRepository(RecipesSiteDbContext dbContext)
+    public ImagesRepository(RecipeSiteContext dbContext)
     {
         this.dbContext = dbContext;
     }

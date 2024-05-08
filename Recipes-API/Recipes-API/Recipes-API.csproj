@@ -26,6 +26,7 @@
 
   <ItemGroup>
     <Folder Include="Scaffold\" />
+    <Folder Include="Scaffold\Context\" />
   </ItemGroup>
 
 </Project>
