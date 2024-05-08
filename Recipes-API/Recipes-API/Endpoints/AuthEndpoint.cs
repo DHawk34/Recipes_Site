@@ -9,6 +9,8 @@ namespace Recipes_API.Endpoints
 {
     public static class AuthEndpoint
     {
+        ///TODO:Валидация
+
         public const string AUTH_PATH = "/auth";
         public const string REFRESH_TOKEN_PATH = AUTH_PATH + "/refresh";
 
@@ -58,7 +60,7 @@ namespace Recipes_API.Endpoints
             if (!await auth.AddNewTokenPairToResponseCookies(context, user))
                 return AuthErrors.CouldNotCreateTokenPair();
 
-            return Results.Created($"/users/{user.Login}", user); ///TODO: загуглить
+            return Results.Created($"/users/{user.Login}", user);
         }
 
         internal static async Task<IResult> LoginAsync(HttpContext context, UsersRepository usersRepository, AuthService auth, UserLoginDto userDto)

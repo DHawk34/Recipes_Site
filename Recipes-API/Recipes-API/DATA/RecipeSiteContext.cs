@@ -184,8 +184,8 @@ public partial class RecipeSiteContext : DbContext
 
             entity.Property(e => e.UserId).HasColumnName("user_id");
             entity.Property(e => e.DeviceId).HasColumnName("device_id");
-            entity.Property(e => e.CreatedDate).HasColumnName("created_date");
-            entity.Property(e => e.ExpiresDate).HasColumnName("expires_date");
+            entity.Property(e => e.CreatedDate).HasConversion(x => x.ToUniversalTime(), x => x.ToLocalTime()).HasPrecision(0).HasColumnName("created_date");
+            entity.Property(e => e.ExpiresDate).HasConversion(x => x.ToUniversalTime(), x => x.ToLocalTime()).HasPrecision(0).HasColumnName("expires_date");
             entity.Property(e => e.TokenHash).HasColumnName("token_hash");
 
             entity.HasOne(d => d.User).WithMany(p => p.UserRefreshTokens)

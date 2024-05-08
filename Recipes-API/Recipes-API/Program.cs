@@ -1,8 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using Recipes_API.DATA;
+using Recipes_API.Endpoints;
 using Recipes_API.Models.CustomModels;
 using Recipes_API.Repositories;
 using Recipes_API.Services;
+using FluentValidation;
+using Recipes_API.Configuration;
+using Microsoft.Extensions.Options;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +20,8 @@ builder.Services.AddDbContext<RecipeSiteContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+
 //builder.Services.AddControllers().AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 
 builder.Services.AddTransient<IngredientsRepository>();
@@ -24,29 +31,62 @@ builder.Services.AddTransient<RecipeIngredientsRepository>();
 builder.Services.AddTransient<RecipeInstructionRepository>();
 builder.Services.AddTransient<ImagesRepository>();
 builder.Services.AddTransient<RecipeGroupRepository>();
+builder.Services.AddTransient<UserRefreshTokenRepository>();
+builder.Services.AddTransient<UsersRepository>();
 
 
 builder.Services.AddTransient<RecipeService>();
+builder.Services.AddTransient<AuthService>();
 
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("CORSPolicy",
-        builder =>
-        {
-            builder
-            .AllowAnyOrigin()
-            .AllowAnyMethod()
-            .AllowAnyHeader();
-            //.WithOrigins("http://localhost:3000");
-        });
-});
+builder.Services.ConfigureAuthentication(builder.Configuration);
+builder.Services.ConfigureAuthorization();
+
+builder.Services.AddCORSPolicy(builder.Configuration);
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
+
+//builder.Services.AddCors(options =>
+//{
+//    options.AddPolicy("CORSPolicy",
+//        builder =>
+//        {
+//            builder
+//            .AllowAnyOrigin()
+//            .AllowAnyMethod()
+//            .AllowAnyHeader();
+//            //.WithOrigins("http://localhost:3000");
+//        });
+//});
 
 var app = builder.Build();
 
-app.UseSwagger();
-app.UseSwaggerUI();
+app.UseCORSPolicy();
 
-app.UseCors("CORSPolicy");
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+
+    // Redirect to swagger page
+    app.Map("/", (HttpResponse response) =>
+    {
+        response.Redirect("/swagger");
+    }).AllowAnonymous();
+}
+
+
+app.UseHttpsRedirection(); //Можно убрать
+app.UseAuthentication();
+app.UseAuthorization();
+
+//app.UseSwagger();
+//app.UseSwaggerUI();
+
+//app.UseCors("CORSPolicy");
+
+app.MapAuthEndpoints();
 
 app.MapGet("/ingredients", async (IngredientsRepository repo) =>
 {
