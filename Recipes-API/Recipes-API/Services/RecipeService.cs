@@ -108,7 +108,10 @@ public class RecipeService
 
     public async Task<string> DeleteAsync(long id)
     {
-        var recipe = await dbContext.Recipes.FirstOrDefaultAsync(x => x.Id == id);
+        var recipe = await dbContext.Recipes.FindAsync(id);
+        if (recipe == null)
+            return "error";
+
         var instructions = await dbContext.RecipeInstructions.Where(x => x.Recipe == id).ToArrayAsync();
         List<long> imageIds = new(instructions.Length + 1);
         foreach (var inst in instructions)

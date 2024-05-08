@@ -7,6 +7,7 @@ namespace Recipes_API.DATA;
 
 public partial class RecipeSiteContext : DbContext
 {
+    //Scaffold-DbContext "Host=localhost;Port=5432;Database=recipe_site;Username=neo;Password=admin;" Npgsql.EntityFrameworkCore.PostgreSQL -OutputDir "Scaffold" -ContextDir "Scaffold/Context"
     public RecipeSiteContext()
     {
     }
@@ -167,6 +168,9 @@ public partial class RecipeSiteContext : DbContext
             entity.Property(e => e.Login)
                 .HasMaxLength(32)
                 .HasColumnName("login");
+            entity.Property(e => e.Name)
+                .HasMaxLength(32)
+                .HasColumnName("name");
             entity.Property(e => e.PasswordHash).HasColumnName("password_hash");
             entity.Property(e => e.PasswordSalt).HasColumnName("password_salt");
             entity.Property(e => e.PublicId).HasColumnName("public_id");
