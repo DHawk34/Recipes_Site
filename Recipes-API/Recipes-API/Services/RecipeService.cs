@@ -57,7 +57,7 @@ public class RecipeService
         return recipeId;
     }
 
-    public async Task<long> EditRecipeAsync(long id, CustomRecipe recipe)
+    public async Task<long> EditRecipeAsync(int id, CustomRecipe recipe)
     {
         var recipeDb = await dbContext.Recipes.FirstOrDefaultAsync(x => x.Id == id);
 
@@ -106,7 +106,7 @@ public class RecipeService
         return recipeDb.Id;
     }
 
-    public async Task<string> DeleteAsync(long id)
+    public async Task<string> DeleteAsync(int id)
     {
         var recipe = await dbContext.Recipes.FindAsync(id);
         if (recipe == null)

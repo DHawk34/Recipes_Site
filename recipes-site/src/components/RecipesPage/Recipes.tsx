@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import styles from './Recipes.module.css'
-import config from '../../config.json'
+import ENDPOINTS from '@/endPoints';
 import RecipeModel from '../../models/recipeModel';
 import { useLocation, useNavigate, useSearchParams, useMatch } from 'react-router-dom';
 import { ReactComponent as Magnifier} from '@/assets/magnifier.svg';
@@ -66,7 +66,7 @@ export function Recipes() {
   var recipes: Array<RecipeModel> = recipesFromServerResponse
 
   //groups
-  const { data: groupsFromServerResponse } = useQuery('groups', () => fetchData('recipe-groups'), {
+  const { data: groupsFromServerResponse } = useQuery('groups', () => fetchData(ENDPOINTS.RECIPE_GROUPS.ALL), {
   });
   var groups: MyOptionTypeInt[] = [{ label: 'Любая', value: -1 }];
 
@@ -78,7 +78,7 @@ export function Recipes() {
 
   //ingredients
 
-  const { data: ingredientsFromServerResponse } = useQuery('ingredients', () => fetchData('ingredients'), {
+  const { data: ingredientsFromServerResponse } = useQuery('ingredients', () => fetchData(ENDPOINTS.INGREDIENTS.ALL), {
   });
 
 
@@ -91,7 +91,7 @@ export function Recipes() {
   });
 
   //cuisines
-  const { data: cuisinesFromServerResponse } = useQuery('cuisines', () => fetchData('cuisines'), {
+  const { data: cuisinesFromServerResponse } = useQuery('cuisines', () => fetchData(ENDPOINTS.CUISINES.ALL), {
   });
   var allCuisines: MyOptionTypeInt[] = [{ label: 'Любая', value: -1 }];
 
@@ -103,12 +103,12 @@ export function Recipes() {
 
 
   const fetchData = async (method: string) => {
-    return fetch(config.apiServer + method)
+    return fetch(method)
       .then(res => res.json())
   }
 
   async function fetchRecipe() {
-    let url = new URL(config.apiServer + 'recipe/search')
+    let url = new URL(ENDPOINTS.RECIPES.SEARCH)
     let name = searchParams.get('recipe_search')
     let a_ingr = searchParams.getAll('a_ingr')
     let r_ingr = searchParams.getAll('r_ingr')
@@ -335,7 +335,7 @@ export function Recipes() {
       <div className={styles.flip_card_inner}>
         <div className={styles.recipe_preview}>
           <div className={styles.recipe_img_container}>
-            <img src={config.apiServer + `image?id=${recipe.finishImage}`} alt={recipe.name} />
+            <img src={`${ENDPOINTS.IMAGE.GET}?id=${recipe.finishImage}`} alt={recipe.name} />
             <div className={styles.recipe_time + ' horizontal'}>
               <Clock height='15px' width='15px'></Clock><p>&nbsp;{getCookTime(recipe)}</p>
             </div>

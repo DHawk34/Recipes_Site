@@ -11,6 +11,7 @@ using Recipes_API.Repositories;
 using Recipes_API.Configuration;
 using Recipes_API.Extensions;
 using Recipes_API.Endpoints;
+using Recipes_API.Errors;
 
 namespace Recipes_API.Services;
 
@@ -25,6 +26,7 @@ public class AuthService
     public static readonly TimeSpan deviceID_CookieLifetime = TimeSpan.FromDays(400);
 
     private readonly IConfiguration config;
+
     private readonly UserRefreshTokenRepository refreshTokenRepo;
 
     public AuthService(IConfiguration config, UserRefreshTokenRepository refreshTokenRepo)
@@ -49,6 +51,33 @@ public class AuthService
         return passwordHash.SequenceEqual(computedHash);
     }
 
+    public static async Task<UserTokenInfo?> TryGetUserInfoFromHttpContextAsync(HttpContext context)
+    {
+        var accessToken = await context.GetTokenAsync(ACCESS_TOKEN_COOKIE_NAME);
+        if (accessToken is null) return null;
+
+        return GetUserInfoFromAccessToken(accessToken);
+    }
+
+
+    public Task<bool> LogoutFromDevice(Guid userPublicID, Guid deviceID)
+    {
+        return refreshTokenRepo.RemoveUserTokenDeviceAsync(userPublicID, deviceID);
+    }
+
+    public Task<bool> LogoutFromAllDevices(Guid userPublicID)
+    {
+        return refreshTokenRepo.RemoveAllUserTokensAsync(userPublicID);
+    }
+
+    public Task<bool> LogoutFromAllDevices_ExceptOne(Guid userPublicID, Guid deviceID)
+    {
+        return refreshTokenRepo.RemoveUserTokensExceptOneDeviceAsync(userPublicID, deviceID);
+    }
+
+
+
+    #region Token
 
     public string CreateAccessToken(User user) => CreateAccessToken(user.PublicId);
 
@@ -57,7 +86,7 @@ public class AuthService
         var claims = new Claim[]
         {
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new(JwtRegisteredClaimNames.Sub, userPublicID.ToString("N")),
+            new(JwtRegisteredClaimNames.Sub, userPublicID.ToString()),
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Key"]!));
@@ -75,14 +104,6 @@ public class AuthService
 
         var tokenHandler = new JwtSecurityTokenHandler();
         return tokenHandler.WriteToken(token);
-    }
-
-    public static async Task<UserTokenInfo?> TryGetUserInfoFromHttpContextAsync(HttpContext context)
-    {
-        var accessToken = await context.GetTokenAsync(ACCESS_TOKEN_COOKIE_NAME);
-        if (accessToken is null) return null;
-
-        return GetUserInfoFromAccessToken(accessToken);
     }
 
     public static UserTokenInfo GetUserInfoFromAccessToken(string accessToken)
@@ -110,7 +131,7 @@ public class AuthService
             return null;
 
         var tokenHandler = new JwtSecurityTokenHandler();
-        var validationResult = await tokenHandler.ValidateTokenAsync(accessToken, ServicesConfigurator.GetJwtTokenValidationParameters(config));
+        var validationResult = await tokenHandler.ValidateTokenAsync(accessToken, AuthConfigurator.GetJwtTokenValidationParameters(config));
 
         return validationResult.IsValid
             ? validationResult.SecurityToken as JwtSecurityToken
@@ -157,23 +178,6 @@ public class AuthService
         return refreshTokenRepo.UpdateRefreshTokenAsync(userRefreshToken, token);
     }
 
-    public Task<bool> LogoutFromDevice(Guid userPublicID, Guid deviceID)
-    {
-        return refreshTokenRepo.RemoveUserTokenDeviceAsync(userPublicID, deviceID);
-    }
-
-    public Task<bool> LogoutFromAllDevices(Guid userPublicID)
-    {
-        return refreshTokenRepo.RemoveAllUserTokensAsync(userPublicID);
-    }
-
-    public Task<bool> LogoutFromAllDevices_ExceptOne(Guid userPublicID, Guid deviceID)
-    {
-        return refreshTokenRepo.RemoveUserTokensExceptOneDeviceAsync(userPublicID, deviceID);
-    }
-
-
-
     private static RefreshToken CreateRefreshToken()
     {
         return new RefreshToken
@@ -184,27 +188,24 @@ public class AuthService
         };
     }
 
-
-
     public async Task<bool> AddNewTokenPairToResponseCookies(HttpContext context, User user)
     {
         string? deviceIDStr = context.Request.GetDeviceIdCookie();
-        Guid deviceID = Guid.NewGuid();
-
-        if (deviceIDStr != null && deviceIDStr.Contains('-'))
-        {
-            deviceID = Guid.Parse(deviceIDStr.Replace("-", ""));
-        }
+        Guid deviceID = deviceIDStr != null ? Guid.Parse(deviceIDStr) : Guid.NewGuid();
 
         var refreshToken = await CreateRefreshTokenAsync(user.Id, deviceID);
         if (refreshToken is null)
             return false;
 
         var accessToken = CreateAccessToken(user);
-        AddTokenCookiesToResponse(context.Response, deviceID.ToString("N"), accessToken, refreshToken);
+        AddTokenCookiesToResponse(context.Response, deviceID.ToString(), accessToken, refreshToken);
 
         return true;
     }
+
+    #endregion
+
+    #region Cookies
 
     public void AddTokenCookiesToResponse(HttpResponse response, string deviceID, string accessToken, RefreshToken refreshToken)
     {
@@ -256,4 +257,6 @@ public class AuthService
             Expires = DateTime.UnixEpoch,
         });
     }
+
+    #endregion
 }

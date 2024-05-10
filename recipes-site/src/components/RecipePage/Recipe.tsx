@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import './Recipe.css';
-import config from '../../config.json'
+import ENDPOINTS from '@/endPoints';
 import RecipeModel from '../../models/recipeModel';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ReactComponent as Star} from '@/assets/star.svg';
@@ -29,11 +29,11 @@ export function Recipe() {
     const navigate = useNavigate();
 
     //recipes
-    const { data: recipeFromServerResponse } = useQuery(`recipe-${recipeId}`, () => fetchData(`recipe?id=${recipeId}`));
+    const { data: recipeFromServerResponse } = useQuery(`recipe-${recipeId}`, () => fetchData(`${ENDPOINTS.RECIPES.GET}?id=${recipeId}`));
     let recipe: RecipeModel = recipeFromServerResponse
 
     const fetchData = async (method: string) => {
-        return fetch(config.apiServer + method)
+        return fetch(method)
             .then(res => res.json())
             .catch(e => {
                 navigate('*')
@@ -71,7 +71,7 @@ export function Recipe() {
 
     const deleteRecipe = () => {
         if (window.confirm('Действительно удалить рецепт?')) {
-            fetch(config.apiServer + `recipe/delete?id=${recipeId}`, { method: 'DELETE' })
+            fetch(`${ENDPOINTS.RECIPES.DELETE}?id=${recipeId}`, { method: 'DELETE' })
                 .then(() => {
                     alert('Рецепт успешно удалён')
                     navigate('/recipes')
@@ -146,7 +146,7 @@ export function Recipe() {
                 <h4 className='step_text'>Шаг {instruction_step.step}</h4>
             </div>
             <div className='instruction_step'>
-                <img className='instruction_step_image' src={config.apiServer + `image?id=${instruction_step.instructionImage}`} alt={index.toString()} />
+                <img className='instruction_step_image' src={`${ENDPOINTS.IMAGE.GET}?id=${instruction_step.instructionImage}`} alt={index.toString()} />
                 <p>{instruction_step.instructionText}</p>
             </div>
         </div>
@@ -156,7 +156,7 @@ export function Recipe() {
         <div id='recipe_container' ref={componentRef}>
             {recipe ? (
                 <>
-                    <img id='finish_image' src={config.apiServer + `image?id=${recipe.finishImage}`} alt={recipe.name} />
+                    <img id='finish_image' src={`${ENDPOINTS.IMAGE.GET}?id=${recipe.finishImage}`} alt={recipe.name} />
                     <h2 id='recipe_name'>{recipe.name}</h2>
                     <Link id='group_text' className='underline clickable link' to={`/recipes?group=${recipe.groupNavigation.id}`}>{recipe.groupNavigation.name}</Link>
 

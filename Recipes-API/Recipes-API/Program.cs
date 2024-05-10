@@ -36,6 +36,8 @@ builder.Services.AddTransient<UsersRepository>();
 
 
 builder.Services.AddTransient<RecipeService>();
+builder.Services.AddTransient<AuthMapService>();
+
 builder.Services.AddTransient<AuthService>();
 
 builder.Services.ConfigureAuthentication(builder.Configuration);
@@ -43,8 +45,6 @@ builder.Services.ConfigureAuthorization();
 
 builder.Services.AddCORSPolicy(builder.Configuration);
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
 
 //builder.Services.AddCors(options =>
@@ -80,33 +80,15 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection(); //Можно убрать
 app.UseAuthentication();
 app.UseAuthorization();
-
 //app.UseSwagger();
 //app.UseSwaggerUI();
 
 //app.UseCors("CORSPolicy");
 
 app.MapAuthEndpoints();
+app.MapRecipeEndpoints();
 
-app.MapGet("/ingredients", async (IngredientsRepository repo) =>
-{
-    return await repo.GetAllAsync();
-});
 
-app.MapGet("/recipe-groups", async (RecipeGroupRepository repo) =>
-{
-    return await repo.GetAllGroupsAsync();
-});
-
-app.MapGet("/cuisines", async (NationalCuisineRepository repo) =>
-{
-    return await repo.GetAllAsync();
-});
-
-app.MapPost("/recipe/add", async (HttpRequest request, HttpContext context, CustomRecipe recipe, RecipeService recipeService) =>
-{
-    return await recipeService.AddNewRecipeAsync(recipe);
-});
 
 app.MapGet("/image", async (int id, ImagesRepository imagesRepo) =>
 {
@@ -115,31 +97,6 @@ app.MapGet("/image", async (int id, ImagesRepository imagesRepo) =>
         return Results.NotFound();
 
     return Results.File(content.Value.data, contentType: content.Value.contentType);
-});
-
-app.MapGet("/recipe/all", async (RecipeRepository repo) =>
-{
-    return await repo.GetAllAsync();
-});
-
-app.MapGet("/recipe", async (int id, RecipeRepository repo) =>
-{
-    return await repo.GetAsync(id);
-});
-
-app.MapDelete("/recipe/delete", async (int id, RecipeService repo) =>
-{
-    return await repo.DeleteAsync(id);
-});
-
-app.MapPut("/recipe/update", async (HttpRequest request, HttpContext context, CustomRecipe recipe, long id, RecipeService recipeService) =>
-{
-    return await recipeService.EditRecipeAsync(id, recipe);
-});
-
-app.MapGet("/recipe/search", async (string? name, int[]? a_ingr, int[]? r_ingr, int? n_cuisine, int? group, long? time, int? difficult, int? hot, int[]? r_ids, RecipeService repo) =>
-{
-    return await repo.SearchRecipesAsync(name, a_ingr, r_ingr, n_cuisine, group, time, difficult, hot, r_ids);
 });
 
 app.MapGet("/catalog/groups", async (RecipeRepository repo) =>

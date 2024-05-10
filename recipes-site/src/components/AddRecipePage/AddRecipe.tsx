@@ -5,7 +5,7 @@ import { ReactComponent as Trashcan} from '@/assets/trashcan.svg';
 import { ReactComponent as Star} from '@/assets/star.svg';
 import { ReactComponent as Fire} from '@/assets/fire.svg';
 import { ReactComponent as Refresh} from '@/assets/refresh.svg';
-import config from '../../config.json'
+import ENDPOINTS from '@/endPoints';
 import Select, { MultiValue, SingleValue } from 'react-select';
 import { ActionMeta } from 'react-select';
 import CreatableSelect from 'react-select/creatable';
@@ -60,11 +60,11 @@ export function AddRecipe() {
     var groupSelect: any = null;
     var nationalCuisineSelect: any = null;
 
-    const { data: recipeFromServerResponse } = useQuery(`recipe-${match?.params.id}`, () => fetchData(`recipe?id=${match?.params.id}`), { enabled: match != null });
+    const { data: recipeFromServerResponse } = useQuery(`recipe-${match?.params.id}`, () => fetchData(`${ENDPOINTS.RECIPES.GET}?id=${match?.params.id}`), { enabled: match != null });
     let recipe: RecipeModel = recipeFromServerResponse
 
     //groups
-    const { data: groupsFromServerResponse } = useQuery('groups', () => fetchData('recipe-groups'));
+    const { data: groupsFromServerResponse } = useQuery('groups', () => fetchData(ENDPOINTS.RECIPE_GROUPS.ALL));
     var groups: MyOptionTypeInt[] = [];
 
     var groupsFromServer: Array<IdNameModel> = groupsFromServerResponse
@@ -74,7 +74,7 @@ export function AddRecipe() {
     });
 
     //ingredients
-    const { data: ingredientsFromServerResponse } = useQuery('ingredients', () => fetchData('ingredients'));
+    const { data: ingredientsFromServerResponse } = useQuery('ingredients', () => fetchData(ENDPOINTS.INGREDIENTS.ALL));
     var allIngredients: MyOptionTypeString[] = [];
 
     var ingredientsFromServer: Array<IdNameModel> = ingredientsFromServerResponse
@@ -84,7 +84,7 @@ export function AddRecipe() {
     });
 
     //cuisines
-    const { data: cuisinesFromServerResponse } = useQuery('cuisines', () => fetchData('cuisines'));
+    const { data: cuisinesFromServerResponse } = useQuery('cuisines', () => fetchData(ENDPOINTS.CUISINES.ALL));
     var allCuisines: MyOptionTypeString[] = [];
 
     var cuisinesFromServer: Array<IdNameModel> = cuisinesFromServerResponse
@@ -115,7 +115,7 @@ export function AddRecipe() {
         }
         recipe?.recipeInstructions.sort(compareIndexFound)
 
-        fetch(config.apiServer + `image?id=${recipe.finishImage}`).then(res => res.blob().then((blob) => {
+        fetch(`${ENDPOINTS.IMAGE.GET}?id=${recipe.finishImage}`).then(res => res.blob().then((blob) => {
             // please change the file.extension with something more meaningful
             // or create a utility function to parse from URL
             const file = new File([blob], `image`, { type: blob.type })
@@ -140,7 +140,7 @@ export function AddRecipe() {
         let instructions_step: { instruction: string | undefined, image: File | undefined }[] = []
 
         recipe.recipeInstructions.forEach(instr => {
-            fetch(config.apiServer + `image?id=${instr.instructionImage}`).then(res => res.blob().then((blob) => {
+            fetch(`${ENDPOINTS.IMAGE.GET}?id=${instr.instructionImage}`).then(res => res.blob().then((blob) => {
                 const file = new File([blob], `image`, { type: blob.type })
                 instructions_step.push({ instruction: instr.instructionText, image: file });
                 setInstructionStep(instructions_step);
@@ -198,7 +198,7 @@ export function AddRecipe() {
     }
 
     const fetchData = async (method: string) => {
-        return fetch(config.apiServer + method)
+        return fetch(method)
             .then(res => res.json())
     }
 
@@ -385,31 +385,33 @@ export function AddRecipe() {
 
         formData.append('creation_time', new Date().toISOString())
 
-        const request = new XMLHttpRequest();
-
         if (!match) {
-            request.open("POST", config.apiServer + "recipe/add");
-            request.send(formData);
-
-            request.onload = () => {
-                console.log(request.response)
-                navigate('/recipes/' + request.response)
-            }
-            request.onerror = () => [
+            fetch(ENDPOINTS.RECIPES.ADD, {
+                method: 'post',
+                body: formData
+            })
+            .then(resp => resp.text())
+            .then(data => {
+                console.log(data)
+                navigate('/recipes/' + data)
+            })
+            .catch(() => {
                 alert('Ошибка при добавлении рецепта')
-            ]
+            })
         }
         else {
-            request.open("PUT", config.apiServer + `recipe/update?id=${match.params.id}`);
-            request.send(formData);
-
-            request.onload = () => {
-                console.log(request.response)
-                navigate('/recipes/' + request.response)
-            }
-            request.onerror = () => [
+            fetch(`${ENDPOINTS.RECIPES.UPDATE}?id=${match.params.id}`, {
+                method: 'put',
+                body: formData
+            })
+            .then(resp => resp.text())
+            .then(data => {
+                console.log(data)
+                navigate('/recipes/' + data)
+            })
+            .catch(() => {
                 alert('Ошибка при изменении рецепта')
-            ]
+            })
         }
 
     }

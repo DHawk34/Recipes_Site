@@ -1,41 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Recipes_API.Extensions;
 using System.Text;
 
 namespace Recipes_API.Configuration;
 
-public static class ServicesConfigurator
+public static class AuthConfigurator
 {
-    ///TODO: Спросить про конфиги
-
-
-    private const string CORS_POLICY_NAME = "CORSPolicy";
-
-    public static void AddCORSPolicy(this IServiceCollection services, IConfiguration config)
-    {
-        services.AddCors(options =>
-        {
-            string[] origins = config.GetSection("CORSAllowedOrigins").Get<string[]>() ?? [];
-
-            options.AddPolicy(CORS_POLICY_NAME,
-                builder =>
-                {
-                    builder
-                    .AllowAnyMethod()
-                    .AllowAnyHeader()
-                    .AllowCredentials()
-                    .WithOrigins(origins);
-                });
-        });
-    }
-
-    public static void UseCORSPolicy(this WebApplication app)
-    {
-        app.UseCors(CORS_POLICY_NAME);
-    }
-
     public static void ConfigureAuthentication(this IServiceCollection services, IConfiguration config)
     {
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
@@ -69,11 +42,6 @@ public static class ServicesConfigurator
 
     public static void ConfigureAuthorization(this IServiceCollection services)
     {
-        services.AddAuthorizationBuilder()
-            .SetFallbackPolicy(new AuthorizationPolicyBuilder()
-                .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme)
-                .RequireAuthenticatedUser()
-                .Build()
-            );
+        services.AddAuthorization();
     }
 }
