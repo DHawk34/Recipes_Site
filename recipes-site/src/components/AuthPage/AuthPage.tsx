@@ -1,6 +1,9 @@
 import React, { useEffect, useReducer, useRef, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom'
 import styles from './AuthPage.module.css'
+import { formToJson } from '@/utils/utils';
+import ENDPOINTS from '@/endPoints';
+import axios from 'axios';
 
 
 export function AuthPage() {
@@ -23,11 +26,35 @@ export function AuthPage() {
   const register = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const formData = new FormData(e.currentTarget)
+    var jsonObj = formToJson(formData)
+    var json = JSON.stringify(jsonObj);
+
+    axios.post(ENDPOINTS.AUTH.REGISTER, jsonObj).then((response) => {
+      console.log(response)
+      console.log('registered: ' + jsonObj.username)
+      // setTimeout(() => navigate(redirectAfterLogin), 1000)
+    }).catch(e => {
+      console.error(e?.response?.data || e?.message || e)
+      // showWarningText(getErrorMessage(e))
+    })
   }
 
   const login = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const formData = new FormData(e.currentTarget)
+    var jsonObj = formToJson(formData)
+    var json = JSON.stringify(jsonObj);
+
+    console.log(jsonObj)
+
+    axios.post(ENDPOINTS.AUTH.LOGIN, jsonObj).then((response) => {
+      console.log(response)
+      console.log('logged in as: ' + jsonObj.username)
+      // setTimeout(() => navigate(redirectAfterLogin), 1000)
+    }).catch(e => {
+      console.error(e?.response?.data || e?.message || e)
+      // showWarningText(getErrorMessage(e))
+    })
   }
 
   return (

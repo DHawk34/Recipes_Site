@@ -8,6 +8,7 @@ import { NotFound } from './components/NotFoundPage/NotFound';
 import { AddRecipe } from './components/AddRecipePage/AddRecipe';
 import { Recipe } from './components/RecipePage/Recipe';
 import { AuthPage } from './components/AuthPage/AuthPage';
+import { ProfilePage } from './components/ProfilePage/ProfilePage';
 export class App extends React.Component {
   render(): React.ReactNode {
     return (
@@ -20,6 +21,7 @@ export class App extends React.Component {
           <Route path='/recipes' element={<Recipes key='recipes' />} />
           <Route path='/register' element={<AuthPage key='register' />} />
           <Route path='/login' element={<AuthPage key='login' />} />
+          <Route path='/profile' element={<ProfilePage key='profile' />} />
           <Route path='/recipes/favorite' element={<Recipes key='fav_recipes' />} />
           <Route path='/recipes/:id' element={<Recipe />} />
           <Route path='/recipes/:id/edit' element={<AddRecipe key='editRecipe' />} />

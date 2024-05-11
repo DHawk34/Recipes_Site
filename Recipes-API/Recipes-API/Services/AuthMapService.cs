@@ -24,20 +24,20 @@ public class AuthMapService
 
     public async Task<IResult> RegisterAsync(HttpContext context, UserRegisterDto userDto)
     {
-        if (await usersRepository.GetUserByLoginAsync(userDto.Login) is not null)
-            return AuthErrors.UserAlreadyExists(userDto.Login);
+        if (await usersRepository.GetUserByLoginAsync(userDto.Username) is not null)
+            return AuthErrors.UserAlreadyExists(userDto.Username);
 
         authService.CreatePasswordHash(userDto.Password, out var passwordHash, out var passwordSalt);
         var user = new User
         {
-            Login = userDto.Login,
+            Login = userDto.Username,
             Name = userDto.Name,
             PasswordHash = passwordHash,
             PasswordSalt = passwordSalt
         };
 
         if (!await usersRepository.AddNewUserAsync(user))
-            return UserErrors.CouldNotCreate(userDto.Login);
+            return UserErrors.CouldNotCreate(userDto.Username);
 
         if (!await authService.AddNewTokenPairToResponseCookies(context, user))
             return AuthErrors.CouldNotCreateTokenPair();
@@ -47,7 +47,7 @@ public class AuthMapService
 
     public async Task<IResult> LoginAsync(HttpContext context, UserLoginDto userDto)
     {
-        var user = await usersRepository.GetUserByLoginAsync(userDto.Login);
+        var user = await usersRepository.GetUserByLoginAsync(userDto.Username);
 
         if (user is null || !authService.VerifyPasswordHash(userDto.Password, user.PasswordHash, user.PasswordSalt))
             return Results.NotFound("Invalid login or password");

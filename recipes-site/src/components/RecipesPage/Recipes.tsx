@@ -12,6 +12,7 @@ import { ReactComponent as Clock} from '@/assets/clock.svg';
 import { addMeta } from '../../utils/utils';
 import { redirect } from "react-router-dom";
 import { useCookies } from 'react-cookie';
+import axios from 'axios';
 
 // type MyState = {
 //   recipes: Array<Recipe>,
@@ -103,8 +104,8 @@ export function Recipes() {
 
 
   const fetchData = async (method: string) => {
-    return fetch(method)
-      .then(res => res.json())
+    return axios.get(method)
+      .then(res => res.data)
   }
 
   async function fetchRecipe() {
@@ -158,8 +159,8 @@ export function Recipes() {
         url.searchParams.append('r_ids', '-1')
     }
 
-    return fetch(url)
-      .then(res => res.json())
+    return axios.get(url.toString())
+      .then(res => res.data)
   }
 
 

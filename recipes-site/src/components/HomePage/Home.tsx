@@ -5,12 +5,13 @@ import RecipeModel from '../../models/recipeModel';
 import { useQuery } from 'react-query';
 import { Link, NavLink } from 'react-router-dom';
 import { addMeta } from '../../utils/utils';
+import axios from 'axios';
 
 export function Home() {
 
   const fetchData = async (method: string) => {
-    return fetch(method)
-      .then(res => res.json())
+    return axios.get(method)
+      .then(res => res.data)
   }
 
   useEffect(() => {

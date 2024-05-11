@@ -15,6 +15,7 @@ import { ReactComponent as Printer} from '@/assets/printer.svg';
 import { useCookies } from 'react-cookie';
 import { ReactComponent as Trashcan} from '@/assets/trashcan.svg';
 import { ReactComponent as Pencil} from '@/assets/pencil.svg';
+import axios from 'axios';
 
 export function Recipe() {
     // const [recipe, setRecipe] = useState<RecipeModel>();
@@ -33,8 +34,8 @@ export function Recipe() {
     let recipe: RecipeModel = recipeFromServerResponse
 
     const fetchData = async (method: string) => {
-        return fetch(method)
-            .then(res => res.json())
+        return axios.get(method)
+            .then(res => res.data)
             .catch(e => {
                 navigate('*')
             })
@@ -71,7 +72,7 @@ export function Recipe() {
 
     const deleteRecipe = () => {
         if (window.confirm('Действительно удалить рецепт?')) {
-            fetch(`${ENDPOINTS.RECIPES.DELETE}?id=${recipeId}`, { method: 'DELETE' })
+            axios.delete(`${ENDPOINTS.RECIPES.DELETE}?id=${recipeId}`)
                 .then(() => {
                     alert('Рецепт успешно удалён')
                     navigate('/recipes')

@@ -19,8 +19,11 @@ public class NationalCuisineRepository
         return await dbContext.NationalCuisines.ToListAsync();
     }
 
-    public async Task<int> GetIdOrAddAsync(string nationalCuisine)
+    public async Task<int?> GetIdOrAddAsync(string? nationalCuisine)
     {
+        if(nationalCuisine == null)
+            return null;
+
         var n_nationalCuisine = await dbContext.NationalCuisines.FirstOrDefaultAsync((x) => x.Name == nationalCuisine);
         if (n_nationalCuisine != null)
             return n_nationalCuisine.Id;

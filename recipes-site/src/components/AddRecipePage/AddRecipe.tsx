@@ -15,6 +15,7 @@ import { useQuery } from 'react-query';
 import { useLocation, useMatch, useNavigate } from 'react-router-dom';
 import { addMeta } from '../../utils/utils';
 import RecipeModel from '../../models/recipeModel';
+import axios from 'axios';
 
 type MyOptionTypeInt = {
     label: string;
@@ -115,15 +116,16 @@ export function AddRecipe() {
         }
         recipe?.recipeInstructions.sort(compareIndexFound)
 
-        fetch(`${ENDPOINTS.IMAGE.GET}?id=${recipe.finishImage}`).then(res => res.blob().then((blob) => {
+        axios.get(`${ENDPOINTS.IMAGE.GET}?id=${recipe.finishImage}`, {responseType: 'blob'}).then(res => {
             // please change the file.extension with something more meaningful
             // or create a utility function to parse from URL
-            const file = new File([blob], `image`, { type: blob.type })
+            const file = new File([res.data], `image`, { type: res.data.type })
             setFinishDishImage(file);
-        }));
+        });
 
         (document.getElementById(`recipe_name`) as HTMLInputElement).value = recipe.name;
         setGroupOption({ label: recipe.groupNavigation.name, value: recipe.groupNavigation.id });
+        if(recipe.nationalCuisineNavigation)
         setCuisineOption({ label: recipe.nationalCuisineNavigation.name, value: recipe.nationalCuisineNavigation.name });
 
         if (recipe.hot > 0)
@@ -140,11 +142,11 @@ export function AddRecipe() {
         let instructions_step: { instruction: string | undefined, image: File | undefined }[] = []
 
         recipe.recipeInstructions.forEach(instr => {
-            fetch(`${ENDPOINTS.IMAGE.GET}?id=${instr.instructionImage}`).then(res => res.blob().then((blob) => {
-                const file = new File([blob], `image`, { type: blob.type })
+            axios.get(`${ENDPOINTS.IMAGE.GET}?id=${instr.instructionImage}`, {responseType: 'blob'}).then(res => {
+                const file = new File([res.data], `image`, { type: res.data.type })
                 instructions_step.push({ instruction: instr.instructionText, image: file });
                 setInstructionStep(instructions_step);
-            }));
+            });
         });
 
         var time = recipe.cookTime.split(':');
@@ -198,8 +200,8 @@ export function AddRecipe() {
     }
 
     const fetchData = async (method: string) => {
-        return fetch(method)
-            .then(res => res.json())
+        return axios.get(method)
+            .then(res => res.data)
     }
 
     const onUnload = (e: any) => {
@@ -386,28 +388,20 @@ export function AddRecipe() {
         formData.append('creation_time', new Date().toISOString())
 
         if (!match) {
-            fetch(ENDPOINTS.RECIPES.ADD, {
-                method: 'post',
-                body: formData
-            })
-            .then(resp => resp.text())
-            .then(data => {
-                console.log(data)
-                navigate('/recipes/' + data)
+            axios.post(ENDPOINTS.RECIPES.ADD, formData)
+            .then(resp => {
+                console.log(resp.data)
+                navigate('/recipes/' + resp.data)
             })
             .catch(() => {
                 alert('Ошибка при добавлении рецепта')
             })
         }
         else {
-            fetch(`${ENDPOINTS.RECIPES.UPDATE}?id=${match.params.id}`, {
-                method: 'put',
-                body: formData
-            })
-            .then(resp => resp.text())
-            .then(data => {
-                console.log(data)
-                navigate('/recipes/' + data)
+            axios.put(`${ENDPOINTS.RECIPES.UPDATE}?id=${match.params.id}`, formData)
+            .then(resp => {
+                console.log(resp.data)
+                navigate('/recipes/' + resp.data)
             })
             .catch(() => {
                 alert('Ошибка при изменении рецепта')

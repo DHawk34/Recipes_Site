@@ -16,3 +16,36 @@ export const addMeta = (name: string, content: string) => {
   meta.content = content;
   document.head.appendChild(meta);
 }
+
+export const formToJson = (form: FormData) => {
+  var jsonObj: any = {}
+
+  form.forEach((value, key) => {
+    // Reflect.has in favor of: object.hasOwnProperty(key)
+    if (!Reflect.has(jsonObj, key)) {
+      jsonObj[key] = value;
+      return;
+    }
+    if (!Array.isArray(jsonObj[key])) {
+      jsonObj[key] = [jsonObj[key]];
+    }
+    jsonObj[key].push(value);
+  });
+
+  return jsonObj
+}
+
+
+// const DEFAULT_OPTIONS = {
+//   headers: {
+//     'Accept': 'application/json',
+//     'Content-Type': 'application/json'
+//   }
+// }
+
+// export async function useFetch(url:RequestInfo | URL, options: RequestInit | undefined = {}) {
+//       return fetch(url, { ...DEFAULT_OPTIONS, ...options }).then(res => {
+//           if (!res.ok) return res.json()
+//           return res.json().then(json => Promise.reject(json))
+//       })
+// }
