@@ -1,30 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
 
-namespace Recipes_API.Models;
+namespace Recipes_API.Scaffold;
 
 public partial class User
 {
-    [JsonIgnore]
     public int Id { get; set; }
 
     public Guid PublicId { get; set; }
 
-    [JsonIgnore]
     public string Login { get; set; } = null!;
 
     public string Name { get; set; } = null!;
 
-    [JsonIgnore]
     public byte[] PasswordHash { get; set; } = null!;
 
-    [JsonIgnore]
     public byte[] PasswordSalt { get; set; } = null!;
 
-    [JsonIgnore]
     public string Email { get; set; } = null!;
 
-    [JsonIgnore]
     public virtual ICollection<UserRefreshToken> UserRefreshTokens { get; set; } = new List<UserRefreshToken>();
 }

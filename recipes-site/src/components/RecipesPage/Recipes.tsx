@@ -3,26 +3,22 @@ import styles from './Recipes.module.css'
 import ENDPOINTS from '@/endPoints';
 import RecipeModel from '../../models/recipeModel';
 import { useLocation, useNavigate, useSearchParams, useMatch } from 'react-router-dom';
-import { ReactComponent as Magnifier} from '@/assets/magnifier.svg';
+import { ReactComponent as Magnifier } from '@/assets/magnifier.svg';
 import Select from 'react-select';
 import { SelectStyle } from '../../styles';
 import { useQuery } from 'react-query';
 import IdNameModel from '../../models/idNameModel';
-import { ReactComponent as Clock} from '@/assets/clock.svg';
-import { addMeta } from '../../utils/utils';
-import { redirect } from "react-router-dom";
+import { ReactComponent as Clock } from '@/assets/clock.svg';
+import { addMeta, fetchData } from '../../utils/utils';
 import { useCookies } from 'react-cookie';
 import axios from 'axios';
+import { RecipeCard } from '../RecipeCard/RecipeCard';
+import { MyOptionTypeInt } from '@/models/optionType';
 
 // type MyState = {
 //   recipes: Array<Recipe>,
 //   canOpenRecipe: boolean
 // }
-
-type MyOptionTypeInt = {
-  label: string;
-  value: number;
-};
 
 
 const mySelectStyle = SelectStyle<MyOptionTypeInt>()
@@ -102,12 +98,6 @@ export function Recipes() {
     allCuisines.push({ value: element.id, label: element.name });
   });
 
-
-  const fetchData = async (method: string) => {
-    return axios.get(method)
-      .then(res => res.data)
-  }
-
   async function fetchRecipe() {
     let url = new URL(ENDPOINTS.RECIPES.SEARCH)
     let name = searchParams.get('recipe_search')
@@ -186,57 +176,6 @@ export function Recipes() {
     addMeta('description', 'Рецепты')
     addMeta('keywords', 'выпечка, гарниры, вторые блюда, супы, сладости, напитки')
   }, [myState]);
-
-  const getIngredientsText = (recipe: RecipeModel) => {
-    var finalStr = "";
-    recipe.recipeIngredients.forEach(ingredients => {
-      finalStr += ingredients.ingredientNavigation.name + ", "
-    });
-
-    finalStr = finalStr.slice(0, -2)
-    return finalStr
-  }
-
-  const getCookTime = (recipe: RecipeModel) => {
-    var time = recipe?.cookTime.split(':');
-    if (!time)
-      return `-`
-
-    let hours = time[0]
-    let minutes = time[1]
-    let finalStr = '';
-    if (hours !== '0')
-      finalStr += hours + ' ч '
-    if (minutes !== '0')
-      finalStr += minutes + ' м'
-
-    return finalStr.trim();
-  }
-
-  const openRecipe = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>, recipeId: number) => {
-    e.preventDefault()
-    if (isLongPress.current)
-      return;
-
-    //return redirect(`recipes/${recipeId}`);
-    navigate(`/recipes/${recipeId}`)
-  }
-
-  const startPressTimer = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
-    if (e.nativeEvent.button !== 0)
-      return;
-    e.currentTarget.classList.add(styles.selected)
-
-    isLongPress.current = false;
-    timerRef.current = setTimeout(() => {
-      isLongPress.current = true;
-    }, 300);
-  }
-
-  const clearPressTimer = (element: HTMLElement) => {
-    element.classList.remove(styles.selected)
-    clearTimeout(timerRef.current);
-  }
 
   const handleShowExtra = () => {
     var extraSearchContainer = document.getElementById(styles.search_container)
@@ -332,23 +271,7 @@ export function Recipes() {
   }, [searchParams])
 
   let recipeItems = recipes?.map((recipe: RecipeModel, index: number) => {
-    return <a className={styles.recipe_card} href={`${recipe.id}`} key={index} onClick={(e) => openRecipe(e, recipe.id)} onMouseDown={(e) => startPressTimer(e)} onMouseUp={(e) => clearPressTimer(e.currentTarget)}>
-      <div className={styles.flip_card_inner}>
-        <div className={styles.recipe_preview}>
-          <div className={styles.recipe_img_container}>
-            <img src={`${ENDPOINTS.IMAGE.GET}?id=${recipe.finishImage}`} alt={recipe.name} />
-            <div className={styles.recipe_time + ' horizontal'}>
-              <Clock height='15px' width='15px'></Clock><p>&nbsp;{getCookTime(recipe)}</p>
-            </div>
-          </div>
-          <p>{recipe.name}</p>
-        </div>
-        <div className={styles.recipe_info}>
-          <p>Ингредиенты:</p>
-          <p>{getIngredientsText(recipe)}</p>
-        </div>
-      </div>
-    </a>
+    return <RecipeCard recipe={recipe} key={index} />
   })
 
   return (

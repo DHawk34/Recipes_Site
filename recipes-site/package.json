@@ -1,7 +1,7 @@
 {
   "name": "recipes-site",
   "version": "0.1.0",
-  "homepage": "http://localhost:3000/home",
+  "homepage": "http://192.168.88.17:3000/home",
   "private": true,
   "dependencies": {
     "@craco/craco": "^7.1.0",

@@ -4,15 +4,10 @@ import ENDPOINTS from '@/endPoints';
 import RecipeModel from '../../models/recipeModel';
 import { useQuery } from 'react-query';
 import { Link, NavLink } from 'react-router-dom';
-import { addMeta } from '../../utils/utils';
+import { addMeta, fetchData } from '../../utils/utils';
 import axios from 'axios';
 
 export function Home() {
-
-  const fetchData = async (method: string) => {
-    return axios.get(method)
-      .then(res => res.data)
-  }
 
   useEffect(() => {
     document.title = 'Главная'
@@ -33,7 +28,7 @@ export function Home() {
 
 
   let groupItems = recipeGroups?.map((recipe: RecipeModel, index: number) => {
-    return <Link className={styles.catalog_card} to={`$/recipes/?group=${recipe.groupNavigation.id}`} key={index} >
+    return <Link className={styles.catalog_card} to={`/recipes/?group=${recipe.groupNavigation.id}`} key={index} >
       <img src={`${ENDPOINTS.IMAGE.GET}?id=${recipe.finishImage}`} alt={recipe.name} />
       <p>{recipe.groupNavigation.name}</p>
     </Link>

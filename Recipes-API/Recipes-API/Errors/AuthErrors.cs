@@ -12,6 +12,12 @@ public static class AuthErrors
         return GetResult(Errors.BadRequest, $"User with login `{login}` already exists");
     }
 
+    /// <summary> <inheritdoc cref="Errors.BadRequest"/> </summary>
+    public static IResult InvalidPassword()
+    {
+        return GetResult(Errors.BadRequest, $"Invalid password");
+    }
+
     /// <summary> <inheritdoc cref="Errors.ServerError"/> </summary>
     public static IResult CouldNotCreateTokenPair()
     {

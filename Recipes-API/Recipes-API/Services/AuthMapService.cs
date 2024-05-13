@@ -27,11 +27,15 @@ public class AuthMapService
         if (await usersRepository.GetUserByLoginAsync(userDto.Username) is not null)
             return AuthErrors.UserAlreadyExists(userDto.Username);
 
-        authService.CreatePasswordHash(userDto.Password, out var passwordHash, out var passwordSalt);
+        if (userDto.Password == null || userDto.Password.Length != 2 || userDto.Password[0] != userDto.Password[1])
+            return AuthErrors.InvalidPassword();
+
+        authService.CreatePasswordHash(userDto.Password[0], out var passwordHash, out var passwordSalt);
         var user = new User
         {
             Login = userDto.Username,
             Name = userDto.Name,
+            Email = userDto.Email,
             PasswordHash = passwordHash,
             PasswordSalt = passwordSalt
         };

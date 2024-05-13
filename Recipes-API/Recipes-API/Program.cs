@@ -87,7 +87,7 @@ app.UseAuthorization();
 
 app.MapAuthEndpoints();
 app.MapRecipeEndpoints();
-
+app.MapUsersEndpoints();
 
 
 app.MapGet("/image", async (int id, ImagesRepository imagesRepo) =>

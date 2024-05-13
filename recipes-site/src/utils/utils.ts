@@ -6,6 +6,8 @@
 //     reader.onerror = (error) => reject(error);
 //   });
 
+import axios from "axios";
+
 export const addMeta = (name: string, content: string) => {
   let meta = document.querySelector(`meta[name = "${name}"`) as HTMLMetaElement;
 
@@ -35,6 +37,17 @@ export const formToJson = (form: FormData) => {
   return jsonObj
 }
 
+export const fetchData = async (method: string) => {
+  return axios.get(method)
+    .then(res => res.data)
+    .catch(e => {
+      console.log(e)
+    })
+}
+
+export function div(x: number, y: number){
+  return (x - x % y) / y;
+}
 
 // const DEFAULT_OPTIONS = {
 //   headers: {

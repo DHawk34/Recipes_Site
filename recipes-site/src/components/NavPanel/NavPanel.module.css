@@ -111,7 +111,7 @@
     display: none;
 }
 
-@media all and (max-width:950px) {
+@media all and (max-width:960px) {
     #pc {
         display: none;
     }

@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
-using Recipes_API.Models;
+using Recipes_API.Scaffold;
 
-namespace Recipes_API.DATA;
+namespace Recipes_API.Scaffold.Context;
 
 public partial class RecipeSiteContext : DbContext
 {
-    //Scaffold-DbContext "Host=localhost;Port=5432;Database=recipe_site;Username=neo;Password=admin;" Npgsql.EntityFrameworkCore.PostgreSQL -OutputDir "Scaffold" -ContextDir "Scaffold/Context"
     public RecipeSiteContext()
     {
     }
@@ -35,9 +34,9 @@ public partial class RecipeSiteContext : DbContext
 
     public virtual DbSet<UserRefreshToken> UserRefreshTokens { get; set; }
 
-//    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-//        => optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=recipe_site;Username=neo;Password=admin;");
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=recipe_site;Username=neo;Password=admin;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -187,8 +186,12 @@ public partial class RecipeSiteContext : DbContext
 
             entity.Property(e => e.UserId).HasColumnName("user_id");
             entity.Property(e => e.DeviceId).HasColumnName("device_id");
-            entity.Property(e => e.CreatedDate).HasConversion(x => x.ToUniversalTime(), x => x.ToLocalTime()).HasPrecision(0).HasColumnName("created_date");
-            entity.Property(e => e.ExpiresDate).HasConversion(x => x.ToUniversalTime(), x => x.ToLocalTime()).HasPrecision(0).HasColumnName("expires_date");
+            entity.Property(e => e.CreatedDate)
+                .HasPrecision(0)
+                .HasColumnName("created_date");
+            entity.Property(e => e.ExpiresDate)
+                .HasPrecision(0)
+                .HasColumnName("expires_date");
             entity.Property(e => e.TokenHash).HasColumnName("token_hash");
 
             entity.HasOne(d => d.User).WithMany(p => p.UserRefreshTokens)

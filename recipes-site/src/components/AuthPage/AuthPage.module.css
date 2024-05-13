@@ -10,19 +10,22 @@
     align-items: center;
     flex-direction: column;
 }
-#submit_button{
+
+#submit_button {
     width: 50%;
     margin-left: auto;
     margin-right: auto;
     margin-bottom: 5px;
 }
 
-#redirect_but{
+#redirect_but {
     background-color: transparent;
     color: grey;
 }
 
-input[type="text"], input[type="password"]{
+input[type="text"],
+input[type="password"],
+input[type="email"] {
     margin-bottom: 20px;
 }
 
@@ -38,8 +41,14 @@ input[type="text"], input[type="password"]{
 
 }
 
-.auth_form{
+.auth_form {
     width: 80%;
     display: flex;
     flex-direction: column;
+}
+
+@media all and (max-width:500px) {
+    #registerForm_container {
+        width: 85%;
+    }
 }

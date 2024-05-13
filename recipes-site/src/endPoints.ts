@@ -1,4 +1,4 @@
-const API_SERVER = "http://localhost:5009"
+const API_SERVER = "http://192.168.88.17:5009"
 
 const ENDPOINTS = {
     AUTH:{
@@ -18,6 +18,13 @@ const ENDPOINTS = {
         DELETE: API_SERVER + "/recipe/delete",
         ALL: API_SERVER + "/recipe/all",
         GET: API_SERVER + "/recipe"
+    },
+
+    USERS: {
+        ALL: API_SERVER + "/users",
+        INFO: API_SERVER + "/user",
+        GET: API_SERVER + "/user/",
+        DELETE: API_SERVER + "/user",
     },
 
     CATALOG:{

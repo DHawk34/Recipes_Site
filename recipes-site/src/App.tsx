@@ -9,6 +9,7 @@ import { AddRecipe } from './components/AddRecipePage/AddRecipe';
 import { Recipe } from './components/RecipePage/Recipe';
 import { AuthPage } from './components/AuthPage/AuthPage';
 import { ProfilePage } from './components/ProfilePage/ProfilePage';
+import RequireAuth from './components/RequireAuth/RequireAuth';
 export class App extends React.Component {
   render(): React.ReactNode {
     return (
@@ -19,9 +20,10 @@ export class App extends React.Component {
           <Route path='/' element={<Navigate to='/home' />} />
           <Route path='/home' element={<Home />} />
           <Route path='/recipes' element={<Recipes key='recipes' />} />
-          <Route path='/register' element={<AuthPage key='register' />} />
-          <Route path='/login' element={<AuthPage key='login' />} />
-          <Route path='/profile' element={<ProfilePage key='profile' />} />
+          <Route path='/register' element={<RequireAuth onOk={<AuthPage key='register' />} inverse onFailTo='/profile'/>} />
+          <Route path='/login' element={<RequireAuth onOk={<AuthPage key='login' />} inverse onFailTo='/profile'/>} />
+          <Route path='/profile' element={<RequireAuth onOk={<ProfilePage key='profile' />} />} />
+          <Route path='/profile/:uid' element={<ProfilePage />} />
           <Route path='/recipes/favorite' element={<Recipes key='fav_recipes' />} />
           <Route path='/recipes/:id' element={<Recipe />} />
           <Route path='/recipes/:id/edit' element={<AddRecipe key='editRecipe' />} />

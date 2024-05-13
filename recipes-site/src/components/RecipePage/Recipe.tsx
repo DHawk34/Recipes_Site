@@ -10,7 +10,7 @@ import { ReactComponent as Clock} from '@/assets/clock.svg';
 import { ReactComponent as EarthPlanet} from '@/assets/earthPlanet.svg';
 import { useQuery } from 'react-query';
 import { Link } from 'react-router-dom';
-import { addMeta } from '../../utils/utils';
+import { addMeta, fetchData } from '../../utils/utils';
 import { ReactComponent as Printer} from '@/assets/printer.svg';
 import { useCookies } from 'react-cookie';
 import { ReactComponent as Trashcan} from '@/assets/trashcan.svg';
@@ -32,14 +32,7 @@ export function Recipe() {
     //recipes
     const { data: recipeFromServerResponse } = useQuery(`recipe-${recipeId}`, () => fetchData(`${ENDPOINTS.RECIPES.GET}?id=${recipeId}`));
     let recipe: RecipeModel = recipeFromServerResponse
-
-    const fetchData = async (method: string) => {
-        return axios.get(method)
-            .then(res => res.data)
-            .catch(e => {
-                navigate('*')
-            })
-    }
+    
     const componentRef = useRef(null);
     const reactToPrintContent = React.useCallback(() => {
         return componentRef.current;

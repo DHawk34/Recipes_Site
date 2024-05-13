@@ -59,7 +59,7 @@ export function NavPanel() {
   }
 
   return (
-    <div id={styles.nav_container}>
+    <div id={styles.nav_container} className='print_hide'>
       <div id={styles.mobile}>
         <button id={styles.menu_icon} onClick={handleClick}>
           {clicked ? <Cross width='35px' height='35px' /> : <Hamburger width='35px' height='35px' />}
@@ -76,7 +76,7 @@ export function NavPanel() {
       <div id={styles.pc}>
         {getButtons()}
       </div>
-      <NavLink className={`button ${styles.nav_button}`} to={'/login'} id={styles.profile_button}><Profile width='35px' height='35px'/></NavLink>
+      <NavLink className={`button ${styles.nav_button}`} to={'/profile'} id={styles.profile_button}><Profile width='35px' height='35px'/></NavLink>
     </div>
 
   );

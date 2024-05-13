@@ -11,6 +11,8 @@ public class UsersRepository
     {
         this.dbContext = dbContext;
     }
+    public Task<List<User>> GetAllUsersAsync() => dbContext.Users.ToListAsync();
+
     public async Task<User?> GetUserByIdAsync(long userID)
     {
         return await dbContext.Users.FindAsync(userID);

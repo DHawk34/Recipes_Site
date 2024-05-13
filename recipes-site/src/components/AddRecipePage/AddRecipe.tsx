@@ -13,7 +13,7 @@ import { SelectStyle } from '../../styles';
 import IdNameModel from '../../models/idNameModel';
 import { useQuery } from 'react-query';
 import { useLocation, useMatch, useNavigate } from 'react-router-dom';
-import { addMeta } from '../../utils/utils';
+import { addMeta, fetchData } from '../../utils/utils';
 import RecipeModel from '../../models/recipeModel';
 import axios from 'axios';
 
@@ -197,11 +197,6 @@ export function AddRecipe() {
         else {
             setCuisineOption(selectedOption as MyOptionTypeString);
         }
-    }
-
-    const fetchData = async (method: string) => {
-        return axios.get(method)
-            .then(res => res.data)
     }
 
     const onUnload = (e: any) => {

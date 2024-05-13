@@ -239,23 +239,25 @@ public class AuthService
 
     public void DeleteTokenCookies(HttpResponse response)
     {
-        response.Cookies.Append(ACCESS_TOKEN_COOKIE_NAME, "", new CookieOptions()
-        {
-            Path = "/",
-            SameSite = SameSiteMode.Strict,
-            Secure = false,
-            HttpOnly = true,
-            Expires = DateTime.UnixEpoch,
-        });
+        response.Cookies.Delete(ACCESS_TOKEN_COOKIE_NAME);
+        response.Cookies.Delete(REFRESH_TOKEN_COOKIE_NAME);
+        //response.Cookies.Append(ACCESS_TOKEN_COOKIE_NAME, "", new CookieOptions()
+        //{
+        //    Path = "/",
+        //    SameSite = SameSiteMode.Strict,
+        //    Secure = false,
+        //    HttpOnly = true,
+        //    Expires = DateTime.UnixEpoch,
+        //});
 
-        response.Cookies.Append(REFRESH_TOKEN_COOKIE_NAME, "", new CookieOptions()
-        {
-            Path = AuthEndpoint.REFRESH_TOKEN_PATH,
-            SameSite = SameSiteMode.Strict,
-            Secure = false,
-            HttpOnly = true,
-            Expires = DateTime.UnixEpoch,
-        });
+        //response.Cookies.Append(REFRESH_TOKEN_COOKIE_NAME, "", new CookieOptions()
+        //{
+        //    Path = AuthEndpoint.REFRESH_TOKEN_PATH,
+        //    SameSite = SameSiteMode.Strict,
+        //    Secure = false,
+        //    HttpOnly = true,
+        //    Expires = DateTime.UnixEpoch,
+        //});
     }
 
     #endregion
