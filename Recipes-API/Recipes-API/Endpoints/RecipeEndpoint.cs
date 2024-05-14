@@ -50,9 +50,9 @@ public static class RecipeEndpoint
             return await recipeService.EditRecipeAsync(id, recipe);
         });
 
-        app.MapGet("/recipe/search", async (string? name, int[]? a_ingr, int[]? r_ingr, int? n_cuisine, int? group, long? time, int? difficult, int? hot, int[]? r_ids, RecipeService repo) =>
+        app.MapGet("/recipe/search", async (string? name, int[]? a_ingr, int[]? r_ingr, int? n_cuisine, int? group, int? meal_t, long? time, int? difficult, int? hot, int[]? r_ids, RecipeService repo) =>
         {
-            return await repo.SearchRecipesAsync(name, a_ingr, r_ingr, n_cuisine, group, time, difficult, hot, r_ids);
+            return await repo.SearchRecipesAsync(name, a_ingr, r_ingr, n_cuisine, group, meal_t, time, difficult, hot, r_ids);
         });
     }
 }

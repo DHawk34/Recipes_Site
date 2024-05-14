@@ -114,9 +114,13 @@ table {
     align-content: start;
 }
 
-#group_text {
+.grey_text {
     color: gray;
     margin: 0;
+}
+
+.meal{
+    margin-right: 10px;
 }
 
 .instruction_step {

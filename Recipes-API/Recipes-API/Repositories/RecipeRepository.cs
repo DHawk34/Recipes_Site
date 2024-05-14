@@ -13,12 +13,13 @@ public class RecipeRepository
         this.dbContext = dbContext;
     }
 
-    public async Task<int> AddNewRecipeAsync(int finishDishImage, string name, int group, int? nationalCuisine, string cookTime, int portionCount, int difficult, int hot, string creationTime)
+    public async Task<int> AddNewRecipeAsync(int finishDishImage, string name, int group, int[] mealtime, int? nationalCuisine, string cookTime, int portionCount, int difficult, int hot, DateTime creationTime)
     {
         var new_recipe = await dbContext.Recipes.AddAsync(new Recipe()
         {
             Name = name,
             Group = group,
+            Mealtimes = dbContext.Mealtimes.Where(x => mealtime.Contains(x.Id)).ToList(),
             FinishImage = finishDishImage,
             NationalCuisine = nationalCuisine,
             CookTime = cookTime,
@@ -49,7 +50,7 @@ public class RecipeRepository
     public async Task<List<Recipe>> GetNewsCatalogAsync(int count)
     {
         IEnumerable<Recipe> query = await dbContext.Recipes.ToListAsync();
-        query = query.OrderByDescending(x => DateTime.Parse(x.CreationTime, null, System.Globalization.DateTimeStyles.RoundtripKind)).Take(count);
+        query = query.OrderByDescending(x => x.CreationTime).Take(count);
         return query.ToList();
     }
 
@@ -60,7 +61,7 @@ public class RecipeRepository
 
     public async Task<Recipe?> GetAsync(long id)
     {
-        return await dbContext.Recipes.Include(x => x.GroupNavigation).Include(x => x.NationalCuisineNavigation).Include(x => x.RecipeIngredients).ThenInclude(x => x.IngredientNavigation).Include(x => x.RecipeInstructions).FirstOrDefaultAsync(x => x.Id == id);
+        return await dbContext.Recipes.Include(x => x.GroupNavigation).Include(x => x.NationalCuisineNavigation).Include(x => x.Mealtimes).Include(x => x.RecipeIngredients).ThenInclude(x => x.IngredientNavigation).Include(x => x.RecipeInstructions).FirstOrDefaultAsync(x => x.Id == id);
     }
 }
 

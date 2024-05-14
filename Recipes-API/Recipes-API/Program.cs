@@ -33,6 +33,7 @@ builder.Services.AddTransient<ImagesRepository>();
 builder.Services.AddTransient<RecipeGroupRepository>();
 builder.Services.AddTransient<UserRefreshTokenRepository>();
 builder.Services.AddTransient<UsersRepository>();
+builder.Services.AddTransient<MealtimeRepository>();
 
 
 builder.Services.AddTransient<RecipeService>();
@@ -97,6 +98,11 @@ app.MapGet("/image", async (int id, ImagesRepository imagesRepo) =>
         return Results.NotFound();
 
     return Results.File(content.Value.data, contentType: content.Value.contentType);
+});
+
+app.MapGet("/mealtimes", async (MealtimeRepository repo) =>
+{
+    return await repo.GetAllAsync();
 });
 
 app.MapGet("/catalog/groups", async (RecipeRepository repo) =>

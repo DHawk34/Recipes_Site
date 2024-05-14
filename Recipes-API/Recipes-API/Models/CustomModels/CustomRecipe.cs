@@ -3,7 +3,7 @@
 namespace Recipes_API.Models.CustomModels
 {
 
-    public record CustomRecipe(string name, CustomRecipe.ImageWithType finishDishImage, int group, string? nationalCuisine, int difficult, int hot, string cookTime, int portionCount, CustomRecipe.Ingredient[] ingredients, CustomRecipe.Instruction_step[] instruction, string creation_time)
+    public record CustomRecipe(string name, CustomRecipe.ImageWithType finishDishImage, int group, int[] mealtime, string? nationalCuisine, int difficult, int hot, string cookTime, int portionCount, CustomRecipe.Ingredient[] ingredients, CustomRecipe.Instruction_step[] instruction, DateTime creation_time)
     {
 
         public static async ValueTask<CustomRecipe?> BindAsync(HttpContext httpContext, ParameterInfo parameter)
@@ -11,29 +11,50 @@ namespace Recipes_API.Models.CustomModels
             var name = httpContext.Request.Form["name"];
             var finishDish = httpContext.Request.Form.Files.GetFile("finishDishImage");
             var nationalCuisine = httpContext.Request.Form["nationalCuisine"];
-            int.TryParse(httpContext.Request.Form["group"], out var group);
-            int.TryParse(httpContext.Request.Form["difficult"], out var difficult);
-            int.TryParse(httpContext.Request.Form["hot"], out var hot);
+            if(!int.TryParse(httpContext.Request.Form["group"], out var group))
+                return null;
+            if (!int.TryParse(httpContext.Request.Form["difficult"], out var difficult))
+                return null;
+            if(!int.TryParse(httpContext.Request.Form["hot"], out var hot))
+                return null;
+            var mealtime = httpContext.Request.Form["mealtime"];
             var cookTime = httpContext.Request.Form["cookTime"];
             var ingredients_name = httpContext.Request.Form["ingredients_name"];
             var ingredients_amount = httpContext.Request.Form["ingredients_amount"];
             var instruction_steps_image = httpContext.Request.Form.Files.GetFiles("instruction_steps_image");
             var instruction_steps = httpContext.Request.Form["instruction_steps"];
             var creation_time = httpContext.Request.Form["creation_time"];
-            int.TryParse(httpContext.Request.Form["portionCount"], out var portionCount);
+            if (!int.TryParse(httpContext.Request.Form["portionCount"], out var portionCount))
+                return null;
 
 
-            if (finishDish == null || name.Count == 0 || nationalCuisine.Count == 0 || cookTime.Count == 0 || ingredients_name.Count == 0 || creation_time.Count == 0
+            if (finishDish == null || mealtime.Count == 0 || name.Count == 0 || nationalCuisine.Count == 0 || cookTime.Count == 0 || ingredients_name.Count == 0 || creation_time.Count == 0
                 || ingredients_amount.Count != ingredients_name.Count || instruction_steps_image.Count == 0 || instruction_steps.Count != instruction_steps_image.Count)
             {
                 return null;
             }
+
+            var t_meal = mealtime.ToArray();
+            int[] m_mealtime = new int[t_meal.Count()];
+
+            for (int i = 0; i < t_meal.Count(); i++)
+            {
+                if(!int.TryParse(t_meal[i], out var tmp))
+                    return null;
+
+                m_mealtime[i] = tmp;
+            }
+
             var m_name = name[0];
             var m_nationalCuisine = nationalCuisine[0];
             var m_cookTime = cookTime[0];
-            var m_creationTime = creation_time[0];
 
-            if (m_name == null || m_cookTime == null || m_creationTime == null)
+            if (creation_time[0] == null)
+                return null;
+
+            var m_creationTime = DateTime.Parse(creation_time[0]);
+
+            if (m_name == null || m_cookTime == null)
                 return null;
 
             if (m_nationalCuisine == "")
@@ -75,7 +96,6 @@ namespace Recipes_API.Models.CustomModels
                     return null;
 
                 instruction[i].instruction = i_step;
-
             }
 
             // return the CreateTicketDto
@@ -84,6 +104,7 @@ namespace Recipes_API.Models.CustomModels
                     m_name,
                     finishDishImage,
                     group,
+                    m_mealtime,
                     m_nationalCuisine,
                     difficult,
                     hot,

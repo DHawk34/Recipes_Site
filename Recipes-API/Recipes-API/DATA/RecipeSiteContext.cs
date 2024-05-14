@@ -21,6 +21,8 @@ public partial class RecipeSiteContext : DbContext
 
     public virtual DbSet<Ingredient> Ingredients { get; set; }
 
+    public virtual DbSet<Mealtime> Mealtimes { get; set; }
+
     public virtual DbSet<NationalCuisine> NationalCuisines { get; set; }
 
     public virtual DbSet<Recipe> Recipes { get; set; }
@@ -35,9 +37,9 @@ public partial class RecipeSiteContext : DbContext
 
     public virtual DbSet<UserRefreshToken> UserRefreshTokens { get; set; }
 
-//    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-//        => optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=recipe_site;Username=neo;Password=admin;");
+    //    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+    //        => optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=recipe_site;Username=neo;Password=admin;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -62,6 +64,20 @@ public partial class RecipeSiteContext : DbContext
             entity.Property(e => e.Name).HasColumnName("name");
         });
 
+        modelBuilder.Entity<Mealtime>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("recipe_mealtime_pkey");
+
+            entity.ToTable("mealtime");
+
+            entity.Property(e => e.Id)
+                .UseIdentityAlwaysColumn()
+                .HasColumnName("id");
+            entity.Property(e => e.Name)
+                .HasMaxLength(32)
+                .HasColumnName("name");
+        });
+
         modelBuilder.Entity<NationalCuisine>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("national_cuisine_pk");
@@ -80,13 +96,17 @@ public partial class RecipeSiteContext : DbContext
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.CookTime).HasColumnName("cook_time");
-            entity.Property(e => e.CreationTime).HasColumnName("creation_time");
+            entity.Property(e => e.CreationTime)
+                .HasConversion(x => x.ToUniversalTime(), x => x.ToLocalTime())
+                .HasPrecision(0)
+                .HasColumnName("creation_time");
             entity.Property(e => e.Difficult).HasColumnName("difficult");
             entity.Property(e => e.FinishImage).HasColumnName("finish_image");
             entity.Property(e => e.Group).HasColumnName("group");
             entity.Property(e => e.Hot).HasColumnName("hot");
             entity.Property(e => e.Name).HasColumnName("name");
             entity.Property(e => e.NationalCuisine).HasColumnName("national_cuisine");
+            entity.Property(e => e.Owner).HasColumnName("owner");
             entity.Property(e => e.PortionCount).HasColumnName("portion_count");
 
             entity.HasOne(d => d.FinishImageNavigation).WithMany(p => p.Recipes)
@@ -102,6 +122,30 @@ public partial class RecipeSiteContext : DbContext
             entity.HasOne(d => d.NationalCuisineNavigation).WithMany(p => p.Recipes)
                 .HasForeignKey(d => d.NationalCuisine)
                 .HasConstraintName("fk_recipe_group_national_cuisine_2");
+
+            entity.HasOne(d => d.OwnerNavigation).WithMany(p => p.Recipes)
+                .HasForeignKey(d => d.Owner)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("recipes_owner_fkey");
+
+            entity.HasMany(d => d.Mealtimes).WithMany(p => p.Recipes)
+                .UsingEntity<Dictionary<string, object>>(
+                    "RecipeMealtime",
+                    r => r.HasOne<Mealtime>().WithMany()
+                        .HasForeignKey("Mealtime")
+                        .OnDelete(DeleteBehavior.ClientSetNull)
+                        .HasConstraintName("recipe-mealtime_mealtime_fkey"),
+                    l => l.HasOne<Recipe>().WithMany()
+                        .HasForeignKey("Recipe")
+                        .OnDelete(DeleteBehavior.ClientSetNull)
+                        .HasConstraintName("recipe-mealtime_recipe_fkey"),
+                    j =>
+                    {
+                        j.HasKey("Recipe", "Mealtime").HasName("recipe-mealtime_pkey");
+                        j.ToTable("recipe-mealtime");
+                        j.IndexerProperty<int>("Recipe").HasColumnName("recipe");
+                        j.IndexerProperty<int>("Mealtime").HasColumnName("mealtime");
+                    });
         });
 
         modelBuilder.Entity<RecipeGroup>(entity =>
@@ -187,8 +231,14 @@ public partial class RecipeSiteContext : DbContext
 
             entity.Property(e => e.UserId).HasColumnName("user_id");
             entity.Property(e => e.DeviceId).HasColumnName("device_id");
-            entity.Property(e => e.CreatedDate).HasConversion(x => x.ToUniversalTime(), x => x.ToLocalTime()).HasPrecision(0).HasColumnName("created_date");
-            entity.Property(e => e.ExpiresDate).HasConversion(x => x.ToUniversalTime(), x => x.ToLocalTime()).HasPrecision(0).HasColumnName("expires_date");
+            entity.Property(e => e.CreatedDate)
+                .HasConversion(x => x.ToUniversalTime(), x => x.ToLocalTime())
+                .HasPrecision(0)
+                .HasColumnName("created_date");
+            entity.Property(e => e.ExpiresDate)
+                .HasConversion(x => x.ToUniversalTime(), x => x.ToLocalTime())
+                .HasPrecision(0)
+                .HasColumnName("expires_date");
             entity.Property(e => e.TokenHash).HasColumnName("token_hash");
 
             entity.HasOne(d => d.User).WithMany(p => p.UserRefreshTokens)

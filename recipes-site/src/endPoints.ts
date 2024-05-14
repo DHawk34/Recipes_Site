@@ -41,6 +41,10 @@ const ENDPOINTS = {
         ALL: API_SERVER + "/recipe-groups"
     },
 
+    MEALTIMES:{
+        ALL: API_SERVER + "/mealtimes"
+    },
+
     INGREDIENTS:{
         ALL: API_SERVER + "/ingredients"
     },

@@ -39,7 +39,7 @@ public class RecipeService
             national_cuisine = await nationalCuisineRepo.GetIdOrAddAsync(recipe.nationalCuisine); //добавление национальной кухни в БД
 
         var finishDishImageId = await imagesRepo.AddImageAsync(recipe.finishDishImage.data, recipe.finishDishImage.contentType); //добавление картинки в БД
-        var recipeId = await recipeRepo.AddNewRecipeAsync(finishDishImageId, recipe.name, recipe.group, national_cuisine, recipe.cookTime, recipe.portionCount, recipe.difficult, recipe.hot, recipe.creation_time); //добавление рецепта в БД
+        var recipeId = await recipeRepo.AddNewRecipeAsync(finishDishImageId, recipe.name, recipe.group, recipe.mealtime, national_cuisine, recipe.cookTime, recipe.portionCount, recipe.difficult, recipe.hot, recipe.creation_time); //добавление рецепта в БД
 
         foreach (var ingridient in recipe.ingredients)
         {
@@ -59,7 +59,10 @@ public class RecipeService
 
     public async Task<long> EditRecipeAsync(int id, CustomRecipe recipe)
     {
-        var recipeDb = await dbContext.Recipes.FirstOrDefaultAsync(x => x.Id == id);
+        var recipeDb = await dbContext.Recipes.Include(x => x.Mealtimes).FirstOrDefaultAsync(x => x.Id == id);
+
+        if(recipeDb == null)
+            return -1;
 
         using var transaction = await dbContext.Database.BeginTransactionAsync(); //начало транзакции SQL
 
@@ -78,11 +81,14 @@ public class RecipeService
         dbContext.RecipeInstructions.RemoveRange(instructions);
         dbContext.Images.RemoveRange(images);
 
+        var a = recipe.mealtime;
+
         recipeDb.Name = recipe.name;
         recipeDb.Difficult = recipe.difficult;
         recipeDb.CookTime = recipe.cookTime;
         recipeDb.Hot = recipe.hot;
         recipeDb.Group = recipe.group;
+        recipeDb.Mealtimes = dbContext.Mealtimes.Where(x => recipe.mealtime.Contains(x.Id)).ToList();
         recipeDb.NationalCuisine = await nationalCuisineRepo.GetIdOrAddAsync(recipe.nationalCuisine);
         recipeDb.PortionCount = recipe.portionCount;
 
@@ -130,7 +136,7 @@ public class RecipeService
         return count > 0 ? "success" : "error";
     }
 
-    public async Task<List<Recipe>> SearchRecipesAsync(string? name, int[]? a_ingr, int[]? r_ingr, int? n_cuisine, int? group, long? time, int? difficult, int? hot, int[]? r_ids)
+    public async Task<List<Recipe>> SearchRecipesAsync(string? name, int[]? a_ingr, int[]? r_ingr, int? n_cuisine, int? group, int? meal_t, long? time, int? difficult, int? hot, int[]? r_ids)
     {
         (int hours, int minutes) getTime(string x)
         {
@@ -144,13 +150,16 @@ public class RecipeService
         IQueryable<Recipe> query = dbContext.Recipes.Include(x => x.GroupNavigation).Include(x => x.NationalCuisineNavigation).Include(x => x.RecipeIngredients).ThenInclude(x => x.IngredientNavigation.RecipeIngredients);
 
         if (name != null)
-            query = query.Where(x => x.Name.Contains(name));
+            query = query.Where(x => x.Name.ToLower().Contains(name.ToLower()));
 
         if (n_cuisine != null)
             query = query.Where(x => x.NationalCuisine == n_cuisine);
 
         if (group != null)
             query = query.Where(x => x.Group == group);
+
+        if (meal_t != null)
+            query = query.Where(x => x.Mealtimes.Any(y => y.Id == meal_t));
 
         if(difficult != null)
         {

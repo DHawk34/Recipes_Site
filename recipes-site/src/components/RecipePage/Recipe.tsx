@@ -4,17 +4,17 @@ import './Recipe.css';
 import ENDPOINTS from '@/endPoints';
 import RecipeModel from '../../models/recipeModel';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ReactComponent as Star} from '@/assets/star.svg';
-import { ReactComponent as Fire} from '@/assets/fire.svg';
-import { ReactComponent as Clock} from '@/assets/clock.svg';
-import { ReactComponent as EarthPlanet} from '@/assets/earthPlanet.svg';
+import { ReactComponent as Star } from '@/assets/star.svg';
+import { ReactComponent as Fire } from '@/assets/fire.svg';
+import { ReactComponent as Clock } from '@/assets/clock.svg';
+import { ReactComponent as EarthPlanet } from '@/assets/earthPlanet.svg';
 import { useQuery } from 'react-query';
 import { Link } from 'react-router-dom';
-import { addMeta, fetchData } from '../../utils/utils';
-import { ReactComponent as Printer} from '@/assets/printer.svg';
+import { addMeta, fetchData, instructionStepSortFunc } from '../../utils/utils';
+import { ReactComponent as Printer } from '@/assets/printer.svg';
 import { useCookies } from 'react-cookie';
-import { ReactComponent as Trashcan} from '@/assets/trashcan.svg';
-import { ReactComponent as Pencil} from '@/assets/pencil.svg';
+import { ReactComponent as Trashcan } from '@/assets/trashcan.svg';
+import { ReactComponent as Pencil } from '@/assets/pencil.svg';
 import axios from 'axios';
 
 export function Recipe() {
@@ -32,7 +32,7 @@ export function Recipe() {
     //recipes
     const { data: recipeFromServerResponse } = useQuery(`recipe-${recipeId}`, () => fetchData(`${ENDPOINTS.RECIPES.GET}?id=${recipeId}`));
     let recipe: RecipeModel = recipeFromServerResponse
-    
+
     const componentRef = useRef(null);
     const reactToPrintContent = React.useCallback(() => {
         return componentRef.current;
@@ -84,12 +84,7 @@ export function Recipe() {
         if (!recipe)
             return
 
-        function compareIndexFound(a: { step: number; instructionImage: number; instructionText: string; }, b: { step: number; instructionImage: number; instructionText: string; }) {
-            if (a.step < b.step) { return -1; }
-            if (a.step > b.step) { return 1; }
-            return 0;
-        }
-        recipe?.recipeInstructions.sort(compareIndexFound)
+        recipe?.recipeInstructions.sort(instructionStepSortFunc)
 
         setPortionCount(recipe.portionCount)
         let ingredientsArr: { id: number, name: string, amountPerOne: number }[] = [];
@@ -146,13 +141,21 @@ export function Recipe() {
         </div>
     })
 
+    let meals = recipe?.mealtimes.map((meal: { id: number, name:string }, index: number) => {
+        return <Link key={index} className='underline clickable grey_text meal' to={`/recipes?meal_t=${meal.id}`}>{meal.name}</Link>
+    })
+
     return (
         <div id='recipe_container' ref={componentRef}>
             {recipe ? (
                 <>
                     <img id='finish_image' src={`${ENDPOINTS.IMAGE.GET}?id=${recipe.finishImage}`} alt={recipe.name} />
                     <h2 id='recipe_name'>{recipe.name}</h2>
-                    <Link id='group_text' className='underline clickable link' to={`/recipes?group=${recipe.groupNavigation.id}`}>{recipe.groupNavigation.name}</Link>
+                    <div className='horizontal'>
+                        <Link className='underline clickable grey_text' to={`/recipes?group=${recipe.groupNavigation.id}`}>{recipe.groupNavigation.name}</Link>
+                        <p>&nbsp; | &nbsp;</p>
+                        {meals}
+                    </div>
 
                     <div className='print_hide margin_top' id='buttons_menu'>
                         <button className='button_inv' title="Добавить в избранное" onClick={handleFavorite}><Star width='30px' height='30px' color={isFavorite ? "gold" : "transparent"} strokeWidth='1px'></Star></button>

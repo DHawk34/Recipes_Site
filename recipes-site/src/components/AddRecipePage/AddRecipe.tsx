@@ -1,10 +1,10 @@
 import { SetStateAction, useEffect, useState } from 'react';
 import './AddRecipe.css';
 import Dropzone from 'react-dropzone';
-import { ReactComponent as Trashcan} from '@/assets/trashcan.svg';
-import { ReactComponent as Star} from '@/assets/star.svg';
-import { ReactComponent as Fire} from '@/assets/fire.svg';
-import { ReactComponent as Refresh} from '@/assets/refresh.svg';
+import { ReactComponent as Trashcan } from '@/assets/trashcan.svg';
+import { ReactComponent as Star } from '@/assets/star.svg';
+import { ReactComponent as Fire } from '@/assets/fire.svg';
+import { ReactComponent as Refresh } from '@/assets/refresh.svg';
 import ENDPOINTS from '@/endPoints';
 import Select, { MultiValue, SingleValue } from 'react-select';
 import { ActionMeta } from 'react-select';
@@ -13,20 +13,12 @@ import { SelectStyle } from '../../styles';
 import IdNameModel from '../../models/idNameModel';
 import { useQuery } from 'react-query';
 import { useLocation, useMatch, useNavigate } from 'react-router-dom';
-import { addMeta, fetchData } from '../../utils/utils';
+import { addMeta, fetchData, instructionStepSortFunc } from '../../utils/utils';
 import RecipeModel from '../../models/recipeModel';
 import axios from 'axios';
+import { MyOptionTypeInt, MyOptionTypeString } from '@/models/optionType';
 
-type MyOptionTypeInt = {
-    label: string;
-    value: number;
-};
 type OnChangeInt = (option: MyOptionTypeInt, actionMeta: ActionMeta<MyOptionTypeInt>) => void;
-
-type MyOptionTypeString = {
-    label: string;
-    value: string;
-};
 
 const mySelectStyle = SelectStyle<MyOptionTypeInt>()
 const mySelectStyleString = SelectStyle<MyOptionTypeString>()
@@ -42,6 +34,7 @@ export function AddRecipe() {
     const match = useMatch('/recipes/:id/:ed');
     const [finishedDishImage, setFinishDishImage] = useState<File | undefined>(undefined);
     const [groupSelectedOption, setGroupOption] = useState<MyOptionTypeInt | undefined>(undefined);
+    const [mealtimeSelectedOption, setMealtimeOption] = useState<MyOptionTypeInt[] | undefined>(undefined);
     const [nCuisineSelectedOption, setCuisineOption] = useState<MyOptionTypeString | undefined>(undefined);
     const [hot, setHot] = useState<number>(0);
     const [hours, setHours] = useState<string>('0');
@@ -59,6 +52,7 @@ export function AddRecipe() {
 
     var ingredientNameSelect: any = null;
     var groupSelect: any = null;
+    var mealtimeSelect: any = null;
     var nationalCuisineSelect: any = null;
 
     const { data: recipeFromServerResponse } = useQuery(`recipe-${match?.params.id}`, () => fetchData(`${ENDPOINTS.RECIPES.GET}?id=${match?.params.id}`), { enabled: match != null });
@@ -73,6 +67,17 @@ export function AddRecipe() {
     groupsFromServer?.forEach(element => {
         groups.push({ value: element.id, label: element.name });
     });
+
+    //mealtimes
+    const { data: mealtimesFromServerResponse } = useQuery('mealtimes', () => fetchData(ENDPOINTS.MEALTIMES.ALL));
+    var mealtimes: MyOptionTypeInt[] = [];
+
+    var mealtimesFromServer: Array<IdNameModel> = mealtimesFromServerResponse
+
+    mealtimesFromServer?.forEach(element => {
+        mealtimes.push({ value: element.id, label: element.name });
+    });
+
 
     //ingredients
     const { data: ingredientsFromServerResponse } = useQuery('ingredients', () => fetchData(ENDPOINTS.INGREDIENTS.ALL));
@@ -109,14 +114,9 @@ export function AddRecipe() {
         if (!match || !recipe)
             return
 
-        function compareIndexFound(a: { step: number; instructionImage: number; instructionText: string; }, b: { step: number; instructionImage: number; instructionText: string; }) {
-            if (a.step < b.step) { return -1; }
-            if (a.step > b.step) { return 1; }
-            return 0;
-        }
-        recipe?.recipeInstructions.sort(compareIndexFound)
+        recipe?.recipeInstructions.sort(instructionStepSortFunc)
 
-        axios.get(`${ENDPOINTS.IMAGE.GET}?id=${recipe.finishImage}`, {responseType: 'blob'}).then(res => {
+        axios.get(`${ENDPOINTS.IMAGE.GET}?id=${recipe.finishImage}`, { responseType: 'blob' }).then(res => {
             // please change the file.extension with something more meaningful
             // or create a utility function to parse from URL
             const file = new File([res.data], `image`, { type: res.data.type })
@@ -125,11 +125,14 @@ export function AddRecipe() {
 
         (document.getElementById(`recipe_name`) as HTMLInputElement).value = recipe.name;
         setGroupOption({ label: recipe.groupNavigation.name, value: recipe.groupNavigation.id });
-        if(recipe.nationalCuisineNavigation)
-        setCuisineOption({ label: recipe.nationalCuisineNavigation.name, value: recipe.nationalCuisineNavigation.name });
+        if (recipe.nationalCuisineNavigation)
+            setCuisineOption({ label: recipe.nationalCuisineNavigation.name, value: recipe.nationalCuisineNavigation.name });
 
         if (recipe.hot > 0)
             setHot(recipe.hot)
+
+        let m_meal = recipe.mealtimes.map((item: { id: number, name: string }) => ({ label: item.name, value: item.id }))
+        setMealtimeOption(m_meal)
 
         setDifficult(recipe.difficult)
         setPortion(recipe.portionCount)
@@ -139,15 +142,20 @@ export function AddRecipe() {
         });
         setSelectedIngredients(ingredients);
 
-        let instructions_step: { instruction: string | undefined, image: File | undefined }[] = []
+        let instr_step: { instruction: string | undefined, image: File | undefined }[] = []
 
-        recipe.recipeInstructions.forEach(instr => {
-            axios.get(`${ENDPOINTS.IMAGE.GET}?id=${instr.instructionImage}`, {responseType: 'blob'}).then(res => {
-                const file = new File([res.data], `image`, { type: res.data.type })
-                instructions_step.push({ instruction: instr.instructionText, image: file });
-                setInstructionStep(instructions_step);
-            });
-        });
+
+        async function setupInstructionStep() {
+            for (const instr of recipe.recipeInstructions) {
+                var res = await axios.get(`${ENDPOINTS.IMAGE.GET}?id=${instr.instructionImage}`, { responseType: 'blob' })
+                var file = new File([res.data], `image`, { type: res.data.type })
+                instr_step.push({ instruction: instr.instructionText, image: file });
+            }
+
+            setInstructionStep(instr_step);
+        }
+
+        setupInstructionStep()
 
         var time = recipe.cookTime.split(':');
 
@@ -170,6 +178,7 @@ export function AddRecipe() {
     function resetStates() {
         setFinishDishImage(undefined);
         setGroupOption(undefined);
+        setMealtimeOption(undefined);
         setCuisineOption(undefined);
         setHot(0);
         setHours('0');
@@ -179,6 +188,12 @@ export function AddRecipe() {
         setSelectedIngredients([]);
         setInstructionStep([{ instruction: undefined, image: undefined }]);
         setHeader('Оформление рецепта');
+    }
+
+    const handleMealtimeChange = (selectedOption?: MultiValue<MyOptionTypeInt> | SingleValue<MyOptionTypeInt>) => {
+        if (typeof (selectedOption) !== 'number') {
+            setMealtimeOption(selectedOption as MyOptionTypeInt[]);
+        }
     }
 
     const handleGroupChange = (selectedOption?: MultiValue<MyOptionTypeInt> | SingleValue<MyOptionTypeInt>) => {
@@ -313,13 +328,20 @@ export function AddRecipe() {
         }
 
         var group = groupSelect.getValue() as MyOptionTypeInt[]
-        if (group.length === 0 || groupSelectedOption == null) {
+        if (group.length === 0 || groupSelectedOption === undefined) {
             document.getElementById('group_input_field')?.scrollIntoView(false)
             alert('Выберите группу для рецепта!')
             return
         }
 
         var groupId = groupSelectedOption.value
+
+        var mealtime = mealtimeSelect.getValue() as MyOptionTypeInt[]
+        if (mealtime.length === 0 || mealtimeSelectedOption === undefined) {
+            document.getElementById('mealtime_input_field')?.scrollIntoView(false)
+            alert('Выберите предпочитаемый прием пищи для рецепта!')
+            return
+        }
 
         var n_cuisine = '';
 
@@ -365,6 +387,10 @@ export function AddRecipe() {
         formData.append('cookTime', cookTime)
         formData.append('portionCount', portionCount.toString())
 
+        for (var m of mealtimeSelectedOption) {
+            formData.append('mealtime', m.value.toString());
+        }
+
         for (var ingredient of selectedIngredients) {
             formData.append('ingredients_name', ingredient.name)
             formData.append('ingredients_amount', ingredient.amount.toString())
@@ -384,23 +410,23 @@ export function AddRecipe() {
 
         if (!match) {
             axios.post(ENDPOINTS.RECIPES.ADD, formData)
-            .then(resp => {
-                console.log(resp.data)
-                navigate('/recipes/' + resp.data)
-            })
-            .catch(() => {
-                alert('Ошибка при добавлении рецепта')
-            })
+                .then(resp => {
+                    console.log(resp.data)
+                    navigate('/recipes/' + resp.data)
+                })
+                .catch(() => {
+                    alert('Ошибка при добавлении рецепта')
+                })
         }
         else {
             axios.put(`${ENDPOINTS.RECIPES.UPDATE}?id=${match.params.id}`, formData)
-            .then(resp => {
-                console.log(resp.data)
-                navigate('/recipes/' + resp.data)
-            })
-            .catch(() => {
-                alert('Ошибка при изменении рецепта')
-            })
+                .then(resp => {
+                    console.log(resp.data)
+                    navigate('/recipes/' + resp.data)
+                })
+                .catch(() => {
+                    alert('Ошибка при изменении рецепта')
+                })
         }
 
     }
@@ -491,6 +517,8 @@ export function AddRecipe() {
             <input className='input_field' id='recipe_name' name='recipe_name' type='text' placeholder='Например: Салат "Оливье"' required onFocus={(e) => clearValidate(e.target)} onBlur={(e) => validateInputField(e.target)}></input>
             <p>Группа <sup className='red'>*</sup></p>
             <Select ref={(ref) => groupSelect = ref} options={groups} onChange={(val) => handleGroupChange(val)} value={groupSelectedOption} name='recipe_group' id='group_input_field' classNamePrefix='select_input_field_prefix' placeholder='Выберите группу' styles={mySelectStyle} onFocus={(e) => clearValidate(e.target, 'group_input_field')} onBlur={(e) => validateInputField(e.target, 'group_input_field', e.target.parentNode?.parentNode?.firstChild?.textContent !== 'Выберите группу' ? e.target.parentNode?.parentNode?.firstChild?.textContent : '')} noOptionsMessage={() => 'Такой группы нет'}></Select>
+            <p>Предпочитаемый прием пищи <sup className='red'>*</sup></p>
+            <Select ref={(ref) => mealtimeSelect = ref} options={mealtimes} isMulti onChange={(val) => handleMealtimeChange(val)} value={mealtimeSelectedOption} name='recipe_mealtime' id='mealtime_input_field' classNamePrefix='select_input_field_prefix' placeholder='Выберите прием пищи' styles={mySelectStyle} onFocus={(e) => clearValidate(e.target, 'mealtime_input_field')} onBlur={(e) => validateInputField(e.target, 'mealtime_input_field', e.target.parentNode?.parentNode?.firstChild?.textContent !== 'Выберите прием пищи' ? e.target.parentNode?.parentNode?.firstChild?.textContent : '')} noOptionsMessage={() => 'Такого приема пищи нет'}></Select>
             <p>Национальная кухня</p>
             <CreatableSelect ref={(ref) => nationalCuisineSelect = ref} options={allCuisines} onChange={(val) => handleCusineChange(val)} value={nCuisineSelectedOption} name='national_cuisine' id='national_cuisine' classNamePrefix='select_input_field_prefix' placeholder='Например: Русская' formatCreateLabel={(userInput) => `Добавить "${userInput}"`} styles={mySelectStyleString} noOptionsMessage={() => 'Уже выбрано'} />
 

@@ -49,6 +49,11 @@ export function div(x: number, y: number){
   return (x - x % y) / y;
 }
 
+export function instructionStepSortFunc(a: { step: number; instructionImage: number; instructionText: string; }, b: { step: number; instructionImage: number; instructionText: string; }) {
+  if (a.step < b.step) { return -1; }
+  if (a.step > b.step) { return 1; }
+  return 0;
+}
 // const DEFAULT_OPTIONS = {
 //   headers: {
 //     'Accept': 'application/json',

@@ -3,6 +3,7 @@ export default interface RecipeModel {
     finishImage: number
     name: string
     groupNavigation : {id: number, name: string}
+    mealtimes : {id: number, name: string}[]
     nationalCuisineNavigation: { id: number, name: string }
     cookTime: string
     portionCount: number

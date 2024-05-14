@@ -98,12 +98,25 @@ export function Recipes() {
     allCuisines.push({ value: element.id, label: element.name });
   });
 
+  //mealtime
+  const { data: mealtimeFromServerResponse } = useQuery('mealtime', () => fetchData(ENDPOINTS.MEALTIMES.ALL), {
+  });
+  var allMealtime: MyOptionTypeInt[] = [{ label: 'Любой', value: -1 }];
+
+  var mealtimeFromServer: Array<IdNameModel> = mealtimeFromServerResponse
+
+  mealtimeFromServer?.forEach(element => {
+    allMealtime.push({ value: element.id, label: element.name });
+  });
+
+
   async function fetchRecipe() {
     let url = new URL(ENDPOINTS.RECIPES.SEARCH)
     let name = searchParams.get('recipe_search')
     let a_ingr = searchParams.getAll('a_ingr')
     let r_ingr = searchParams.getAll('r_ingr')
     let n_cuisine = searchParams.get('n_cuisine')
+    let meal_t = searchParams.get('meal_t')
     let group = searchParams.get('group')
     let time = searchParams.get('time')
     let difficult = searchParams.get('difficult')
@@ -117,6 +130,9 @@ export function Recipes() {
 
     if (group)
       url.searchParams.append('group', group)
+
+    if (meal_t)
+      url.searchParams.append('meal_t', meal_t)
 
     if (time)
       url.searchParams.append('time', time)
@@ -288,8 +304,10 @@ export function Recipes() {
             <Select ref={(ref) => setupIngredients(ref, searchParams.getAll('r_ingr'))} options={ingredients} isMulti name='r_ingr' placeholder='Выберите ингредиент' styles={mySelectStyle} noOptionsMessage={() => 'Ингредиент не найден'}></Select>
             <h4>Кухня мира</h4>
             <Select ref={(ref) => setupSingleSelect(ref, searchParams.get('n_cuisine') ?? '-1', allCuisines)} options={allCuisines} name='n_cuisine' placeholder='Выберите кухню' styles={mySelectStyle} defaultValue={allCuisines[0]} noOptionsMessage={() => 'Кухня не найдена'}></Select>
+            <h4>Прием пищи</h4>
+            <Select ref={(ref) => setupSingleSelect(ref, searchParams.get('meal_t') ?? '-1', allMealtime)} options={allMealtime} name='meal_t' placeholder='Выберите прием пищи' styles={mySelectStyle} defaultValue={allMealtime[0]} noOptionsMessage={() => 'Прием пищи не найден'}></Select>
             <h4>Группа</h4>
-            <Select ref={(ref) => setupSingleSelect(ref, searchParams.get('group') ?? '-1', groups)} options={groups} name='group' placeholder='Выберите кухню' styles={mySelectStyle} defaultValue={groups[0]} noOptionsMessage={() => 'Группа не найдена'}></Select>
+            <Select ref={(ref) => setupSingleSelect(ref, searchParams.get('group') ?? '-1', groups)} options={groups} name='group' placeholder='Выберите группу' styles={mySelectStyle} defaultValue={groups[0]} noOptionsMessage={() => 'Группа не найдена'}></Select>
             <h4>Время готовки</h4>
             <div className='selector' id={styles.time_selector}>
               <label>

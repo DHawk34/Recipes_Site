@@ -26,7 +26,9 @@ public partial class Recipe
 
     public int Hot { get; set; }
 
-    public string CreationTime { get; set; } = null!;
+    public int? Owner { get; set; }
+
+    public DateTime CreationTime { get; set; }
 
     public virtual Image FinishImageNavigation { get; set; } = null!;
 
@@ -34,7 +36,12 @@ public partial class Recipe
 
     public virtual NationalCuisine? NationalCuisineNavigation { get; set; }
 
+    public virtual User? OwnerNavigation { get; set; }
+
     public virtual ICollection<RecipeIngredient> RecipeIngredients { get; set; } = new List<RecipeIngredient>();
 
     public virtual ICollection<RecipeInstruction> RecipeInstructions { get; set; } = new List<RecipeInstruction>();
+
+    public virtual ICollection<Mealtime> Mealtimes { get; set; } = new List<Mealtime>();
+
 }
