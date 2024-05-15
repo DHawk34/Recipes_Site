@@ -141,7 +141,7 @@ export function Recipe() {
         </div>
     })
 
-    let meals = recipe?.mealtimes.map((meal: { id: number, name:string }, index: number) => {
+    let meals = recipe?.mealtimes.map((meal: { id: number, name: string }, index: number) => {
         return <Link key={index} className='underline clickable grey_text meal' to={`/recipes?meal_t=${meal.id}`}>{meal.name}</Link>
     })
 
@@ -151,10 +151,17 @@ export function Recipe() {
                 <>
                     <img id='finish_image' src={`${ENDPOINTS.IMAGE.GET}?id=${recipe.finishImage}`} alt={recipe.name} />
                     <h2 id='recipe_name'>{recipe.name}</h2>
-                    <div className='horizontal'>
-                        <Link className='underline clickable grey_text' to={`/recipes?group=${recipe.groupNavigation.id}`}>{recipe.groupNavigation.name}</Link>
-                        <p>&nbsp; | &nbsp;</p>
-                        {meals}
+
+                    <div id='sub_info'>
+                        <div className='horizontal'>
+                            <Link className='underline clickable grey_text' to={`/recipes?group=${recipe.groupNavigation.id}`}>{recipe.groupNavigation.name}</Link>
+                            <p>&nbsp; | &nbsp;</p>
+                            {meals}
+                        </div>
+                        <div className='horizontal'>
+                            <p>Автор:</p>
+                            <Link className='underline clickable inherit_color' to={`/profile/${recipe.ownerNavigation.publicId}`}>{recipe.ownerNavigation.name}</Link>
+                        </div>
                     </div>
 
                     <div className='print_hide margin_top' id='buttons_menu'>
@@ -191,7 +198,7 @@ export function Recipe() {
                             <div className='horizontal'>
                                 <EarthPlanet width='30px' height='30px'></EarthPlanet>
                                 {recipe.nationalCuisineNavigation ?
-                                    <Link className='underline clickable link' to={`/recipes?n_cuisine=${recipe.nationalCuisineNavigation.id}`}>{recipe.nationalCuisineNavigation.name}</Link>
+                                    <Link className='underline clickable link inherit_color' to={`/recipes?n_cuisine=${recipe.nationalCuisineNavigation.id}`}>{recipe.nationalCuisineNavigation.name}</Link>
                                     : <p>Не указано</p>}
                             </div>
                             <p>Кухня</p>

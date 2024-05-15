@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Recipes_API.Configuration;
 using Recipes_API.DATA;
 using Recipes_API.Models;
+using Recipes_API.Models.CustomModels;
 
 namespace Recipes_API.Repositories;
 
@@ -17,10 +19,19 @@ public class UsersRepository
     {
         return await dbContext.Users.FindAsync(userID);
     }
+    public async Task<UserDtoRecipe?> GetUserDtoByPublicIdAsync(Guid publicID)
+    {
+        var mapper = AutoMapperConfig.UserWithRecipesConfig.CreateMapper();
+        
+        var userEntity = await dbContext.Users.Include(x => x.Recipes).ThenInclude(x => x.RecipeIngredients).ThenInclude(x=>x.IngredientNavigation).FirstOrDefaultAsync(x => x.PublicId == publicID);
+        var userDto = mapper.Map<UserDtoRecipe>(userEntity);
+
+        return userDto;
+    }
+
     public async Task<User?> GetUserByPublicIdAsync(Guid publicID)
     {
-
-        return await dbContext.Users.FirstOrDefaultAsync(x => x.PublicId == publicID);
+        return await dbContext.Users.Include(x => x.Recipes).FirstOrDefaultAsync(x => x.PublicId == publicID);
     }
     public async Task<User?> GetUserByLoginAsync(string login)
     {

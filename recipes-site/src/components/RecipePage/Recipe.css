@@ -100,6 +100,15 @@ table {
     text-align: center;
 }
 
+#sub_info{
+    display: flex;
+    justify-content: space-between;
+
+    p{
+        margin: 0;
+    }
+}
+
 /* .instruction {
     display: flex;
     flex-direction: column;
@@ -136,8 +145,11 @@ table {
     text-decoration: underline;
 }
 
-.link {
+.inherit_color{
     color: inherit;
+}
+
+.link {
     margin: 17.6px;
     margin-left: 5px;
 }

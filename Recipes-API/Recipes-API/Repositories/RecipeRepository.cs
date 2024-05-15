@@ -1,6 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using Recipes_API.Configuration;
 using Recipes_API.DATA;
 using Recipes_API.Models;
+using Recipes_API.Models.CustomModels;
 
 namespace Recipes_API.Repositories;
 
@@ -59,9 +62,14 @@ public class RecipeRepository
         return await dbContext.Recipes.Include(x => x.GroupNavigation).Include(x => x.NationalCuisineNavigation).Include(x => x.RecipeIngredients).ThenInclude(x => x.IngredientNavigation).ToListAsync();
     }
 
-    public async Task<Recipe?> GetAsync(long id)
+    public async Task<RecipeDtoUser?> GetAsync(long id)
     {
-        return await dbContext.Recipes.Include(x => x.GroupNavigation).Include(x => x.NationalCuisineNavigation).Include(x => x.Mealtimes).Include(x => x.RecipeIngredients).ThenInclude(x => x.IngredientNavigation).Include(x => x.RecipeInstructions).FirstOrDefaultAsync(x => x.Id == id);
+        var mapper = AutoMapperConfig.RecipeWithOwnerConfig.CreateMapper();
+
+        var recipeEntity = await dbContext.Recipes.Include(x => x.GroupNavigation).Include(x => x.NationalCuisineNavigation).Include(x => x.OwnerNavigation).Include(x => x.Mealtimes).Include(x => x.RecipeIngredients).ThenInclude(x => x.IngredientNavigation).Include(x => x.RecipeInstructions).FirstOrDefaultAsync(x => x.Id == id);
+        var recipeDto = mapper.Map<RecipeDtoUser>(recipeEntity);
+
+        return recipeDto;
     }
 }
 

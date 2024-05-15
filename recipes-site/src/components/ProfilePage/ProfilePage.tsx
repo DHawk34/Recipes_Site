@@ -33,6 +33,8 @@ export function ProfilePage() {
     if (!user || userID)
       return;
 
+    console.log(user)
+
     window.history.replaceState(null, '', `${location.pathname}/${user.publicId}`)
   }, [user, userID])
 
@@ -63,8 +65,8 @@ export function ProfilePage() {
   var days = ['Завтрак', 'Обед', 'Ужин']
 
   let recipeItems = recipes?.map((recipe: RecipeModel, index: number) => {
-    let row = div(index, 4) + 2
-    let column = (index) - (row - 2) * 4 + 2
+    let row = div(index, 7) + 2
+    let column = (index) - (row - 2) * 7 + 2
 
     // console.log({ row, column })
 
@@ -91,20 +93,30 @@ export function ProfilePage() {
               <Select id={styles.cuisine_select} options={allCuisines} name='n_cuisine' placeholder='Выберите кухню' styles={mySelectStyle} noOptionsMessage={() => 'Кухня не найдена'} />
             </div>
           </div>
+
           <div id={styles.menu_table}>
+            <div className={styles.mealtime_div} style={{ gridArea: '1 / 1 / 3 / 2' }} />
 
-            <p style={{ gridArea: '1 / 2 / 2 / 3' }}>Завтрак</p>
-            <p style={{ gridArea: '1 / 3 / 2 / 4' }}>Обед</p>
-            <p style={{ gridArea: '1 / 4 / 2 / 5' }}>Перекус</p>
-            <p style={{ gridArea: '1 / 5 / 2 / 6' }}>Ужин</p>
+            <div className={styles.mealtime_div} style={{ gridArea: '2 / 1 / 3 / 2' }}>
+              <p className={styles.mealtime}>Завтрак</p>
+            </div>
+            <div className={styles.mealtime_div} style={{ gridArea: '3 / 1 / 4 / 2' }}>
+              <p className={styles.mealtime} >Обед</p>
+            </div>
+            <div className={styles.mealtime_div} style={{ gridArea: '4 / 1 / 5 / 2' }}>
+              <p className={styles.mealtime} >Перекус</p>
+            </div>
+            <div className={styles.mealtime_div} style={{ gridArea: '5 / 1 / 6 / 2' }}>
+              <p className={styles.mealtime} >Ужин</p>
+            </div>
 
-            <p style={{ gridArea: '2 / 1 / 3 / 2' }}>ПН</p>
-            <p style={{ gridArea: '3 / 1 / 4 / 2' }}>ВТ</p>
-            <p style={{ gridArea: '4 / 1 / 5 / 2' }}>СР</p>
-            <p style={{ gridArea: '5 / 1 / 6 / 2' }}>ЧТ</p>
-            <p style={{ gridArea: '6 / 1 / 7 / 2' }}>ПТ</p>
-            <p style={{ gridArea: '7 / 1 / 8 / 2' }}>СБ</p>
-            <p style={{ gridArea: '8 / 1 / 9 / 2' }}>ВС</p>
+            <p style={{ gridArea: '1 / 2 / 2 / 3' }}>ПН</p>
+            <p style={{ gridArea: '1 / 3 / 2 / 4' }}>ВТ</p>
+            <p style={{ gridArea: '1 / 4 / 2 / 5' }}>СР</p>
+            <p style={{ gridArea: '1 / 5 / 2 / 6' }}>ЧТ</p>
+            <p style={{ gridArea: '1 / 6 / 2 / 7' }}>ПТ</p>
+            <p style={{ gridArea: '1 / 7 / 2 / 8' }}>СБ</p>
+            <p style={{ gridArea: '1 / 8 / 2 / 9' }}>ВС</p>
 
             {recipes ? recipeItems : null}
           </div>

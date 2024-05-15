@@ -15,10 +15,10 @@ public static class UsersEndpoints
 
         app.MapGet("/user", GetUserAsync)
             .RequireAuthorization()
-            .Produces<User>();
+            .Produces<UserDtoRecipe>();
 
         app.MapGet("/user/{userPublicID}", GetUserByPublicIDAsync)
-            .Produces<User>();
+            .Produces<UserDtoRecipe>();
 
         app.MapDelete("/user", DeleteUserAsync);
     }
@@ -35,7 +35,7 @@ public static class UsersEndpoints
         var userInfo = await AuthService.TryGetUserInfoFromHttpContextAsync(context);
         if (userInfo is null) return Results.Unauthorized();
 
-        var user = await usersRepository.GetUserByPublicIdAsync(userInfo.PublicID);
+        var user = await usersRepository.GetUserDtoByPublicIdAsync(userInfo.PublicID);
 
         return user != null
             ? Results.Ok(user)
@@ -44,7 +44,7 @@ public static class UsersEndpoints
 
     internal static async Task<IResult> GetUserByPublicIDAsync(UsersRepository usersRepository, string userPublicID)
     {
-        var user = await usersRepository.GetUserByPublicIdAsync(Guid.Parse(userPublicID));
+        var user = await usersRepository.GetUserDtoByPublicIdAsync(Guid.Parse(userPublicID));
 
         return user != null
             ? Results.Ok(user)

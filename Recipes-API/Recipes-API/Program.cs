@@ -9,6 +9,7 @@ using Recipes_API.Configuration;
 using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -47,6 +48,7 @@ builder.Services.ConfigureAuthorization();
 builder.Services.AddCORSPolicy(builder.Configuration);
 
 builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
+
 
 //builder.Services.AddCors(options =>
 //{
