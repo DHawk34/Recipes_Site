@@ -109,6 +109,10 @@ table {
     }
 }
 
+.hide{
+    display: none;
+}
+
 /* .instruction {
     display: flex;
     flex-direction: column;

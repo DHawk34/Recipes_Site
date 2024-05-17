@@ -1,5 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.EntityFrameworkCore;
 using Recipes_API.DATA;
+using Recipes_API.Extensions;
 using Recipes_API.Models;
 using Recipes_API.Models.CustomModels;
 using Recipes_API.Repositories;
@@ -17,8 +19,9 @@ public class RecipeService
     private readonly RecipeInstructionRepository recipeInstructionRepo;
     private readonly ImagesRepository imagesRepo;
     private readonly RecipeSiteContext dbContext;
+    private readonly UsersRepository usersRepo;
 
-    public RecipeService(IngredientsRepository ingridientsRepository, RecipeSiteContext dbContext, NationalCuisineRepository nationalCuisineRepo, RecipeRepository recipeRepo, RecipeIngredientsRepository recipeIngredientsRepo, RecipeInstructionRepository recipeInstructionRepo, ImagesRepository imagesRepo)
+    public RecipeService(IngredientsRepository ingridientsRepository, RecipeSiteContext dbContext, NationalCuisineRepository nationalCuisineRepo, RecipeRepository recipeRepo, RecipeIngredientsRepository recipeIngredientsRepo, RecipeInstructionRepository recipeInstructionRepo, ImagesRepository imagesRepo, UsersRepository usersRepository)
     {
         this.ingridientsRepo = ingridientsRepository;
         this.dbContext = dbContext;
@@ -27,11 +30,17 @@ public class RecipeService
         this.recipeIngredientsRepo = recipeIngredientsRepo;
         this.recipeInstructionRepo = recipeInstructionRepo;
         this.imagesRepo = imagesRepo;
+        this.usersRepo = usersRepository;
     }
 
-    public async Task<long> AddNewRecipeAsync(CustomRecipe recipe)
+    public async Task<IResult> AddNewRecipeAsync(CustomRecipe recipe, HttpContext context)
     {
         int? national_cuisine = null;
+
+        var userTokenInfo = await AuthService.TryGetUserInfoFromHttpContextAsync(context);
+
+        if(userTokenInfo == null)
+            return Results.Unauthorized();
 
         using var transaction = await dbContext.Database.BeginTransactionAsync(); //начало транзакции SQL
 
@@ -39,7 +48,12 @@ public class RecipeService
             national_cuisine = await nationalCuisineRepo.GetIdOrAddAsync(recipe.nationalCuisine); //добавление национальной кухни в БД
 
         var finishDishImageId = await imagesRepo.AddImageAsync(recipe.finishDishImage.data, recipe.finishDishImage.contentType); //добавление картинки в БД
-        var recipeId = await recipeRepo.AddNewRecipeAsync(finishDishImageId, recipe.name, recipe.group, recipe.mealtime, national_cuisine, recipe.cookTime, recipe.portionCount, recipe.difficult, recipe.hot, recipe.creation_time); //добавление рецепта в БД
+        var user = await usersRepo.GetUserByPublicIdAsync(userTokenInfo.PublicID);
+
+        if (user == null)
+            return Results.BadRequest();
+
+        var recipeId = await recipeRepo.AddNewRecipeAsync(finishDishImageId, recipe.name, recipe.group, recipe.mealtime, national_cuisine, recipe.cookTime, recipe.portionCount, recipe.difficult, recipe.hot, user.Id, recipe.creation_time); //добавление рецепта в БД
 
         foreach (var ingridient in recipe.ingredients)
         {
@@ -54,20 +68,30 @@ public class RecipeService
         }
 
         await transaction.CommitAsync(); //завершение транзакции SQL
-        return recipeId;
+        return Results.Ok(recipeId);
     }
 
-    public async Task<long> EditRecipeAsync(int id, CustomRecipe recipe)
+    public async Task<IResult> EditRecipeAsync(int id, CustomRecipe recipe, HttpContext context)
     {
         var recipeDb = await dbContext.Recipes.Include(x => x.Mealtimes).FirstOrDefaultAsync(x => x.Id == id);
 
-        if(recipeDb == null)
-            return -1;
+        if (recipeDb == null)
+            return Results.BadRequest();
+
+        var userTokenInfo = await AuthService.TryGetUserInfoFromHttpContextAsync(context);
+
+        if (userTokenInfo == null)
+            return Results.Unauthorized();
+
+        var user = await usersRepo.GetUserByPublicIdAsync(userTokenInfo.PublicID);
+
+        if(user == null || recipeDb.Owner != user.Id)
+            return Results.BadRequest();
 
         using var transaction = await dbContext.Database.BeginTransactionAsync(); //начало транзакции SQL
 
-        var instructions = await dbContext.RecipeInstructions.Where(x => x.Recipe == id).ToArrayAsync();
-        List<long> imageIds = new(instructions.Length);
+        var instructions = dbContext.RecipeInstructions.Where(x => x.Recipe == id);
+        List<long> imageIds = new(instructions.Count());
         foreach (var inst in instructions)
         {
             imageIds.Add(inst.InstructionImage);
@@ -75,7 +99,7 @@ public class RecipeService
 
         var images = dbContext.Images.Where(x => imageIds.Contains(x.Id));
 
-        var recipeIngr = await dbContext.RecipeIngredients.Where(x => x.Recipe == id).ToArrayAsync();
+        var recipeIngr = dbContext.RecipeIngredients.Where(x => x.Recipe == id);
 
         dbContext.RecipeIngredients.RemoveRange(recipeIngr);
         dbContext.RecipeInstructions.RemoveRange(instructions);
@@ -109,14 +133,24 @@ public class RecipeService
         }
 
         await transaction.CommitAsync(); //завершение транзакции SQL
-        return recipeDb.Id;
+        return Results.Ok(recipeDb.Id);
     }
 
-    public async Task<string> DeleteAsync(int id)
+    public async Task<IResult> DeleteAsync(int id, HttpContext context)
     {
         var recipe = await dbContext.Recipes.FindAsync(id);
         if (recipe == null)
-            return "error";
+            return Results.BadRequest();
+
+        var userTokenInfo = await AuthService.TryGetUserInfoFromHttpContextAsync(context);
+
+        if (userTokenInfo == null)
+            return Results.Unauthorized();
+
+        var user = await usersRepo.GetUserByPublicIdAsync(userTokenInfo.PublicID);
+
+        if (user == null || recipe.Owner != user.Id)
+            return Results.BadRequest();
 
         var instructions = await dbContext.RecipeInstructions.Where(x => x.Recipe == id).ToArrayAsync();
         List<long> imageIds = new(instructions.Length + 1);
@@ -133,10 +167,27 @@ public class RecipeService
         dbContext.Images.RemoveRange(images);
 
         var count = await dbContext.SaveChangesAsync();
-        return count > 0 ? "success" : "error";
+        return Results.Ok(count > 0 ? "success" : "error");
     }
 
-    public async Task<List<Recipe>> SearchRecipesAsync(string? name, int[]? a_ingr, int[]? r_ingr, int? n_cuisine, int? group, int? meal_t, long? time, int? difficult, int? hot, int[]? r_ids)
+    public async Task<RecipeDtoUser?> GetAsync(int id, HttpContext context, AuthService authService)
+    {
+        var recipeDto = await recipeRepo.GetAsync(id);
+
+        var userTokenInfo = await authService.TryGetUserInfoFromHttpContextWithValidationAsync(context);
+
+        if (userTokenInfo == null)
+            return recipeDto;
+
+
+        if (recipeDto != null)
+            recipeDto.IsOwner = userTokenInfo.PublicID == recipeDto.OwnerNavigation.PublicId;
+
+        return recipeDto;
+    }
+
+
+    public async Task<List<Recipe>> SearchRecipesAsync(string? name, int[]? a_ingr, int[]? r_ingr, int? n_cuisine, int? group, int? meal_t, long? time, int? difficult, int? hot, int[]? r_ids, int? count, int? page)
     {
         (int hours, int minutes) getTime(string x)
         {
@@ -161,12 +212,12 @@ public class RecipeService
         if (meal_t != null)
             query = query.Where(x => x.Mealtimes.Any(y => y.Id == meal_t));
 
-        if(difficult != null)
+        if (difficult != null)
         {
             switch (difficult)
             {
                 case 0:
-                    query = query.Where(x => x.Difficult > 0  && x.Difficult < 3);
+                    query = query.Where(x => x.Difficult > 0 && x.Difficult < 3);
                     break;
                 case 1:
                     query = query.Where(x => x.Difficult > 2 && x.Difficult < 5);
@@ -200,7 +251,7 @@ public class RecipeService
             }
         }
 
-        if(r_ids?.Length > 0)
+        if (r_ids?.Length > 0)
         {
             query = query.Where(x => r_ids.Contains(x.Id));
         }
@@ -237,6 +288,16 @@ public class RecipeService
         if (r_ingr != null)
         {
             finalQuery = finalQuery.Where(x => x.RecipeIngredients.All(y => !r_ingr.Contains(y.Ingredient)));
+        }
+
+        if (count != null)
+        {
+            if (page != null)
+            {
+                finalQuery = finalQuery.Skip((int)((page - 1) * count));
+            }
+
+            finalQuery = finalQuery.Take((int)count);
         }
 
         return finalQuery.ToList();

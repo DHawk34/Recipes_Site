@@ -59,6 +59,15 @@ public class AuthService
         return GetUserInfoFromAccessToken(accessToken);
     }
 
+    public async Task<UserTokenInfo?> TryGetUserInfoFromHttpContextWithValidationAsync(HttpContext context)
+    {
+        var accessToken = await context.GetTokenAsync(ACCESS_TOKEN_COOKIE_NAME);
+        if (accessToken is null) return null;
+        if (await ValidateAccessTokenAsync(accessToken) == null) return null;
+
+        return GetUserInfoFromAccessToken(accessToken);
+    }
+
 
     public Task<bool> LogoutFromDevice(Guid userPublicID, Guid deviceID)
     {

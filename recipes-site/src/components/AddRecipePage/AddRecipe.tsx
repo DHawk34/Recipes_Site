@@ -113,6 +113,9 @@ export function AddRecipe() {
     useEffect(() => {
         if (!match || !recipe)
             return
+        
+        if(!recipe.isOwner)
+            navigate(`/recipes/${match?.params.id}`)
 
         recipe?.recipeInstructions.sort(instructionStepSortFunc)
 

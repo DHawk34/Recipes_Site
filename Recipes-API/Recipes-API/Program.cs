@@ -92,6 +92,20 @@ app.MapAuthEndpoints();
 app.MapRecipeEndpoints();
 app.MapUsersEndpoints();
 
+app.MapGet("/ingredients", async (IngredientsRepository repo) =>
+{
+    return await repo.GetAllAsync();
+});
+
+app.MapGet("/recipe-groups", async (RecipeGroupRepository repo) =>
+{
+    return await repo.GetAllGroupsAsync();
+});
+
+app.MapGet("/cuisines", async (NationalCuisineRepository repo) =>
+{
+    return await repo.GetAllAsync();
+});
 
 app.MapGet("/image", async (int id, ImagesRepository imagesRepo) =>
 {

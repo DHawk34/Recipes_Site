@@ -12,13 +12,11 @@ public class AuthMapService
     private readonly UsersRepository usersRepository;
     private readonly AuthService authService;
     private readonly UserRefreshTokenRepository userRefreshTokenRepository;
-    private readonly RecipeSiteContext dbContext;
 
     public AuthMapService(UsersRepository usersRepository, AuthService authService, RecipeSiteContext dbContext, UserRefreshTokenRepository userRefreshTokenRepository)
     {
         this.usersRepository = usersRepository;
         this.authService = authService;
-        this.dbContext = dbContext;
         this.userRefreshTokenRepository = userRefreshTokenRepository;
     }
 

@@ -14,6 +14,7 @@ import { useCookies } from 'react-cookie';
 import axios from 'axios';
 import { RecipeCard } from '../RecipeCard/RecipeCard';
 import { MyOptionTypeInt } from '@/models/optionType';
+import { Pagination } from '../Pagintation/Pagination';
 
 // type MyState = {
 //   recipes: Array<Recipe>,
@@ -27,6 +28,7 @@ export function Recipes() {
 
   // const [recipes, setRecipes] = useState(Array<RecipeModel>());
   const [showExtraSearch, setShowExtraSearch] = useState<boolean>(false);
+  const [curPage, setCurPage] = useState<number>(1);
   const [cookies, setCookie, removeCookie] = useCookies(['favoriteDishes']);
   const match = useMatch('/recipes/:fav');
   const [searchHeader, setHeader] = useState<string>(match ? 'Избранное' : 'Все рецепты')
@@ -40,8 +42,11 @@ export function Recipes() {
   const [searchParams, setSearchParams] = useSearchParams();
   const favoriteDishes = cookies["favoriteDishes"] as string[];
 
+  const [recipeParams, setRecipeParams] = useState<URLSearchParams>(new URLSearchParams())
+  const recipePerPage = 10
 
   function resetStates() {
+    setRecipeParams(new URLSearchParams())
     setShowExtraSearch(false)
     var extraSearchContainer = document.getElementById(styles.search_container)
     extraSearchContainer?.classList.add(styles.height_0)
@@ -121,6 +126,7 @@ export function Recipes() {
     let time = searchParams.get('time')
     let difficult = searchParams.get('difficult')
     let hot = searchParams.get('hot')
+    let page = searchParams.get('page')
 
     if (name)
       url.searchParams.append('name', name)
@@ -143,6 +149,8 @@ export function Recipes() {
     if (hot)
       url.searchParams.append('hot', hot)
 
+    url.searchParams.append("page", page?.toString() ?? "1")
+    url.searchParams.append("count", recipePerPage.toString())
 
     a_ingr.forEach(ingr => {
       url.searchParams.append('a_ingr', ingr)
@@ -152,7 +160,7 @@ export function Recipes() {
       url.searchParams.append('r_ingr', ingr)
     });
 
-    if (Array.from(url.searchParams).length > 0)
+    if (Array.from(recipeParams).length > 0)
       setHeader('Результаты поиска')
 
     if (match != null) {
@@ -218,6 +226,13 @@ export function Recipes() {
     return options
   }
 
+  const changePage = (page: number) => {
+    var pageParams = new URLSearchParams(recipeParams)
+    pageParams.append("page", page.toString())
+    setSearchParams(pageParams)
+    // navigate('?' + "page=" + page.toString())
+  }
+
   const submitForm = (e: any) => {
     e.preventDefault()
     let formElement = e.target[0].form
@@ -230,20 +245,21 @@ export function Recipes() {
       [next]: next
     }), {})) as string[];
 
-    var searchParams = new URLSearchParams()
+    var recipeParams = new URLSearchParams()
 
     uniqueKeys.forEach(key => {
       let values = formData.getAll(key) as string[];
 
       if ((values.length > 1) || (values.length === 1 && values[0] !== '-1' && values[0] !== '')) {
         values.forEach(value => {
-          searchParams.append(key, value);
+          recipeParams.append(key, value);
         });
       }
     });
 
-    //setSearchParams(searchParams)
-    navigate('?' + searchParams.toString())
+    setRecipeParams(recipeParams)
+    setSearchParams(recipeParams)
+    // navigate('?' + searchParams.toString())
 
     setShowExtraSearch(false)
     var extraSearchContainer = document.getElementById(styles.search_container)
@@ -382,7 +398,9 @@ export function Recipes() {
         <div id={styles.recipes_grid}>
           {recipeItems}
         </div>
-        : favoriteDishes?.length > 0 ? 'По вашему запросу ничего не найдено' : 'Нет избранных рецептов'}
+        : !match ? 'По вашему запросу ничего не найдено' : 'Нет избранных рецептов'}
+
+      <Pagination page={parseInt(searchParams.get('page') ?? "1")} changePage={changePage} />
     </div>
   );
   //}

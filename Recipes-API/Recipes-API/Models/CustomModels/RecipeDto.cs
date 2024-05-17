@@ -18,8 +18,6 @@ public record RecipeDtoBase
 
     public int Hot { get; set; }
 
-    public int? Owner { get; set; }
-
     public DateTime CreationTime { get; set; }
 
     public virtual Image FinishImageNavigation { get; set; } = null!;
@@ -38,4 +36,5 @@ public record RecipeDtoBase
 public record RecipeDtoUser: RecipeDtoBase
 {
     public virtual UserDtoBase OwnerNavigation { get; set; } = null!;
+    public bool IsOwner { get; set; } = false!;
 }

@@ -16,7 +16,7 @@ public class RecipeRepository
         this.dbContext = dbContext;
     }
 
-    public async Task<int> AddNewRecipeAsync(int finishDishImage, string name, int group, int[] mealtime, int? nationalCuisine, string cookTime, int portionCount, int difficult, int hot, DateTime creationTime)
+    public async Task<int> AddNewRecipeAsync(int finishDishImage, string name, int group, int[] mealtime, int? nationalCuisine, string cookTime, int portionCount, int difficult, int hot, int owner, DateTime creationTime)
     {
         var new_recipe = await dbContext.Recipes.AddAsync(new Recipe()
         {
@@ -29,6 +29,7 @@ public class RecipeRepository
             PortionCount = portionCount,
             Difficult = difficult,
             Hot = hot,
+            Owner = owner,
             CreationTime = creationTime
         });
 
@@ -62,7 +63,7 @@ public class RecipeRepository
         return await dbContext.Recipes.Include(x => x.GroupNavigation).Include(x => x.NationalCuisineNavigation).Include(x => x.RecipeIngredients).ThenInclude(x => x.IngredientNavigation).ToListAsync();
     }
 
-    public async Task<RecipeDtoUser?> GetAsync(long id)
+    public async Task<RecipeDtoUser?> GetAsync(int id)
     {
         var mapper = AutoMapperConfig.RecipeWithOwnerConfig.CreateMapper();
 

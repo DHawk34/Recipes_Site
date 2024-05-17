@@ -11,6 +11,7 @@ export default interface RecipeModel {
     difficult: number
     hot: number
     creationTime: string
+    isOwner: boolean
     recipeIngredients: { amount: number, ingredient: number, ingredientNavigation: { id: number, name: string } }[]
     recipeInstructions: { step: number, instructionImage: number, instructionText: string }[]
 }
