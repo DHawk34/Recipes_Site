@@ -5,6 +5,7 @@ using Recipes_API.Extensions;
 using Recipes_API.Models;
 using Recipes_API.Models.CustomModels;
 using Recipes_API.Repositories;
+using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
 
@@ -39,7 +40,7 @@ public class RecipeService
 
         var userTokenInfo = await AuthService.TryGetUserInfoFromHttpContextAsync(context);
 
-        if(userTokenInfo == null)
+        if (userTokenInfo == null)
             return Results.Unauthorized();
 
         using var transaction = await dbContext.Database.BeginTransactionAsync(); //начало транзакции SQL
@@ -85,7 +86,7 @@ public class RecipeService
 
         var user = await usersRepo.GetUserByPublicIdAsync(userTokenInfo.PublicID);
 
-        if(user == null || recipeDb.Owner != user.Id)
+        if (user == null || recipeDb.Owner != user.Id)
             return Results.BadRequest();
 
         using var transaction = await dbContext.Database.BeginTransactionAsync(); //начало транзакции SQL
@@ -170,24 +171,27 @@ public class RecipeService
         return Results.Ok(count > 0 ? "success" : "error");
     }
 
-    public async Task<RecipeDtoUser?> GetAsync(int id, HttpContext context, AuthService authService)
+    public async Task<RecipeDtoUser?> GetAsync(int id, HttpContext context, UsersRepository usersRepository, AuthService authService)
     {
-        var recipeDto = await recipeRepo.GetAsync(id);
+        var recipeDto = await recipeRepo.GetDtoAsync(id);
 
         var userTokenInfo = await authService.TryGetUserInfoFromHttpContextWithValidationAsync(context);
 
         if (userTokenInfo == null)
             return recipeDto;
 
+        var user = await usersRepository.GetUserByPublicIdAsync(userTokenInfo.PublicID);
 
         if (recipeDto != null)
+        {
             recipeDto.IsOwner = userTokenInfo.PublicID == recipeDto.OwnerNavigation.PublicId;
+            recipeDto.IsFavorite = user.FavoriteRecipes.Any(x => x.Id == recipeDto.Id);
+        }
 
         return recipeDto;
     }
 
-
-    public async Task<List<Recipe>> SearchRecipesAsync(string? name, int[]? a_ingr, int[]? r_ingr, int? n_cuisine, int? group, int? meal_t, long? time, int? difficult, int? hot, int[]? r_ids, int? count, int? page)
+    public async Task<List<Recipe>> SearchRecipesAsync(string? name, int[]? a_ingr, int[]? r_ingr, int? n_cuisine, int? group, int? meal_t, long? time, int? difficult, int? hot, int? count, int? page, List<Recipe>? recipeSource = null)
     {
         (int hours, int minutes) getTime(string x)
         {
@@ -198,7 +202,11 @@ public class RecipeService
             return (hours, minutes);
         }
 
+
         IQueryable<Recipe> query = dbContext.Recipes.Include(x => x.GroupNavigation).Include(x => x.NationalCuisineNavigation).Include(x => x.RecipeIngredients).ThenInclude(x => x.IngredientNavigation.RecipeIngredients);
+
+        if (recipeSource != null)
+            query = query.Where(x => recipeSource.Contains(x));
 
         if (name != null)
             query = query.Where(x => x.Name.ToLower().Contains(name.ToLower()));
@@ -249,11 +257,6 @@ public class RecipeService
                 default:
                     break;
             }
-        }
-
-        if (r_ids?.Length > 0)
-        {
-            query = query.Where(x => r_ids.Contains(x.Id));
         }
 
         IEnumerable<Recipe> finalQuery = await query.ToListAsync();

@@ -37,4 +37,5 @@ public record RecipeDtoUser: RecipeDtoBase
 {
     public virtual UserDtoBase OwnerNavigation { get; set; } = null!;
     public bool IsOwner { get; set; } = false!;
+    public bool IsFavorite { get; set; } = false!;
 }

@@ -29,7 +29,6 @@ export function Recipes() {
   // const [recipes, setRecipes] = useState(Array<RecipeModel>());
   const [showExtraSearch, setShowExtraSearch] = useState<boolean>(false);
   const [curPage, setCurPage] = useState<number>(1);
-  const [cookies, setCookie, removeCookie] = useCookies(['favoriteDishes']);
   const match = useMatch('/recipes/:fav');
   const [searchHeader, setHeader] = useState<string>(match ? 'Избранное' : 'Все рецепты')
 
@@ -40,7 +39,7 @@ export function Recipes() {
 
   const myState = location.state
   const [searchParams, setSearchParams] = useSearchParams();
-  const favoriteDishes = cookies["favoriteDishes"] as string[];
+  // const favoriteDishes = cookies["favoriteDishes"] as string[];
 
   const [recipeParams, setRecipeParams] = useState<URLSearchParams>(new URLSearchParams())
   const recipePerPage = 10
@@ -116,7 +115,7 @@ export function Recipes() {
 
 
   async function fetchRecipe() {
-    let url = new URL(ENDPOINTS.RECIPES.SEARCH)
+    let url = new URL(match ? ENDPOINTS.RECIPES.SEARCH_FAVORITE : ENDPOINTS.RECIPES.SEARCH)
     let name = searchParams.get('recipe_search')
     let a_ingr = searchParams.getAll('a_ingr')
     let r_ingr = searchParams.getAll('r_ingr')
@@ -162,16 +161,6 @@ export function Recipes() {
 
     if (Array.from(recipeParams).length > 0)
       setHeader('Результаты поиска')
-
-    if (match != null) {
-      if (favoriteDishes)
-        favoriteDishes?.forEach(element => {
-          url.searchParams.append('r_ids', element)
-        });
-
-      if (!favoriteDishes || favoriteDishes.length === 0)
-        url.searchParams.append('r_ids', '-1')
-    }
 
     return axios.get(url.toString())
       .then(res => res.data)

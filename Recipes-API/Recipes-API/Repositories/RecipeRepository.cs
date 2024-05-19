@@ -63,14 +63,21 @@ public class RecipeRepository
         return await dbContext.Recipes.Include(x => x.GroupNavigation).Include(x => x.NationalCuisineNavigation).Include(x => x.RecipeIngredients).ThenInclude(x => x.IngredientNavigation).ToListAsync();
     }
 
-    public async Task<RecipeDtoUser?> GetAsync(int id)
+    public async Task<RecipeDtoUser?> GetDtoAsync(int id)
     {
         var mapper = AutoMapperConfig.RecipeWithOwnerConfig.CreateMapper();
 
-        var recipeEntity = await dbContext.Recipes.Include(x => x.GroupNavigation).Include(x => x.NationalCuisineNavigation).Include(x => x.OwnerNavigation).Include(x => x.Mealtimes).Include(x => x.RecipeIngredients).ThenInclude(x => x.IngredientNavigation).Include(x => x.RecipeInstructions).FirstOrDefaultAsync(x => x.Id == id);
+        var recipeEntity = await GetAsync(id);
         var recipeDto = mapper.Map<RecipeDtoUser>(recipeEntity);
 
         return recipeDto;
+    }
+
+    public async Task<Recipe?> GetAsync(int id)
+    {
+        var recipeEntity = await dbContext.Recipes.Include(x => x.GroupNavigation).Include(x => x.NationalCuisineNavigation).Include(x => x.OwnerNavigation).Include(x => x.Mealtimes).Include(x => x.RecipeIngredients).ThenInclude(x => x.IngredientNavigation).Include(x => x.RecipeInstructions).FirstOrDefaultAsync(x => x.Id == id);
+
+        return recipeEntity;
     }
 }
 

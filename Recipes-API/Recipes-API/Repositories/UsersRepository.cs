@@ -3,6 +3,7 @@ using Recipes_API.Configuration;
 using Recipes_API.DATA;
 using Recipes_API.Models;
 using Recipes_API.Models.CustomModels;
+using Recipes_API.Services;
 
 namespace Recipes_API.Repositories;
 
@@ -22,8 +23,8 @@ public class UsersRepository
     public async Task<UserDtoRecipe?> GetUserDtoByPublicIdAsync(Guid publicID)
     {
         var mapper = AutoMapperConfig.UserWithRecipesConfig.CreateMapper();
-        
-        var userEntity = await dbContext.Users.Include(x => x.Recipes).ThenInclude(x => x.RecipeIngredients).ThenInclude(x=>x.IngredientNavigation).FirstOrDefaultAsync(x => x.PublicId == publicID);
+
+        var userEntity = await dbContext.Users.Include(x => x.Recipes).ThenInclude(x => x.RecipeIngredients).ThenInclude(x => x.IngredientNavigation).FirstOrDefaultAsync(x => x.PublicId == publicID);
         var userDto = mapper.Map<UserDtoRecipe>(userEntity);
 
         return userDto;
@@ -31,7 +32,7 @@ public class UsersRepository
 
     public async Task<User?> GetUserByPublicIdAsync(Guid publicID)
     {
-        return await dbContext.Users.Include(x => x.Recipes).FirstOrDefaultAsync(x => x.PublicId == publicID);
+        return await dbContext.Users.Include(x => x.Recipes).Include(x => x.FavoriteRecipes).FirstOrDefaultAsync(x => x.PublicId == publicID);
     }
     public async Task<User?> GetUserByLoginAsync(string login)
     {
@@ -84,5 +85,26 @@ public class UsersRepository
         {
             return false;
         }
+    }
+
+    public async Task<IResult> AddFavoriteAsync(User user, Recipe recipe)
+    {
+        user.FavoriteRecipes.Add(recipe);
+
+        var count = await dbContext.SaveChangesAsync();
+
+        return count > 0 ? Results.Ok() : Results.BadRequest();
+    }
+
+    public async Task<IResult> RemoveFavoriteAsync(User user, Recipe recipe)
+    {
+        var result = user.FavoriteRecipes.Remove(recipe);
+
+        if(!result)
+            return Results.BadRequest();
+
+        var count = await dbContext.SaveChangesAsync();
+
+        return count > 0 ? Results.Ok() : Results.BadRequest();
     }
 }

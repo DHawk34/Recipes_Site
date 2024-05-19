@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Recipes_API.Configuration;
 using Recipes_API.Models;
 using Recipes_API.Models.CustomModels;
 using Recipes_API.Repositories;
@@ -31,6 +32,10 @@ public static class RecipeEndpoint
 
         app.MapGet("/recipe/search", SearchRecipesAsync)
             .Produces<List<Recipe>>();
+
+        app.MapGet("/recipe/search/favorite", SearchFavoriteRecipesAsync)
+            .RequireAuthorization()
+            .Produces<List<Recipe>>();
     }
 
     internal static async Task<IResult> AddNewRecipeAsync(CustomRecipe recipe, HttpContext context, RecipeService recipeService)
@@ -43,9 +48,9 @@ public static class RecipeEndpoint
         return Results.Ok(await repo.GetAllAsync());
     }
 
-    internal static async Task<IResult> GetAsync(int id, HttpContext context, AuthService authService, RecipeService repo)
+    internal static async Task<IResult> GetAsync(int id, HttpContext context, UsersRepository usersRepository, AuthService authService, RecipeService repo)
     {
-        return Results.Ok(await repo.GetAsync(id, context, authService));
+        return Results.Ok(await repo.GetAsync(id, context, usersRepository, authService));
     }
 
     internal static async Task<IResult> DeleteAsync(int id, HttpContext context, RecipeService repo)
@@ -60,6 +65,26 @@ public static class RecipeEndpoint
 
     internal static async Task<IResult> SearchRecipesAsync(string? name, int[]? a_ingr, int[]? r_ingr, int? n_cuisine, int? group, int? meal_t, long? time, int? difficult, int? hot, int[]? r_ids, int? page, int? count, RecipeService repo)
     {
-        return Results.Ok(await repo.SearchRecipesAsync(name, a_ingr, r_ingr, n_cuisine, group, meal_t, time, difficult, hot, r_ids, count, page));
+        return Results.Ok(await repo.SearchRecipesAsync(name, a_ingr, r_ingr, n_cuisine, group, meal_t, time, difficult, hot, count, page));
+    }
+
+    internal static async Task<IResult> SearchFavoriteRecipesAsync(HttpContext context, UsersRepository usersRepository, string? name, int[]? a_ingr, int[]? r_ingr, int? n_cuisine, int? group, int? meal_t, long? time, int? difficult, int? hot, int[]? r_ids, int? page, int? count, RecipeService repo)
+    {
+        var userTokenInfo = await AuthService.TryGetUserInfoFromHttpContextAsync(context);
+        if (userTokenInfo == null)
+            return Results.Unauthorized();
+
+        var user = await usersRepository.GetUserByPublicIdAsync(userTokenInfo.PublicID);
+        if (user == null)
+            return Results.BadRequest();
+
+        var favoriteList = user.FavoriteRecipes.ToList();
+
+        if(favoriteList.Count == 0)
+        {
+            favoriteList.Add(new Recipe() { Id = -1});
+        }
+
+        return Results.Ok(await repo.SearchRecipesAsync(name, a_ingr, r_ingr, n_cuisine, group, meal_t, time, difficult, hot, count, page, favoriteList));
     }
 }

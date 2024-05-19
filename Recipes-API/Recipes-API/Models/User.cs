@@ -26,6 +26,8 @@ public partial class User
     public string Email { get; set; } = null!;
 
     public virtual ICollection<Recipe> Recipes { get; set; } = new List<Recipe>();
+    public virtual ICollection<UserMenu> UserMenus { get; set; } = new List<UserMenu>();
+    public virtual ICollection<Recipe> FavoriteRecipes { get; set; } = new List<Recipe>();
 
     [JsonIgnore]
     public virtual ICollection<UserRefreshToken> UserRefreshTokens { get; set; } = new List<UserRefreshToken>();

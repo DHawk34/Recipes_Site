@@ -35,6 +35,8 @@ public partial class RecipeSiteContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
+    public virtual DbSet<UserMenu> UserMenus { get; set; }
+
     public virtual DbSet<UserRefreshToken> UserRefreshTokens { get; set; }
 
     //    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -133,11 +135,9 @@ public partial class RecipeSiteContext : DbContext
                     "RecipeMealtime",
                     r => r.HasOne<Mealtime>().WithMany()
                         .HasForeignKey("Mealtime")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
                         .HasConstraintName("recipe-mealtime_mealtime_fkey"),
                     l => l.HasOne<Recipe>().WithMany()
                         .HasForeignKey("Recipe")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
                         .HasConstraintName("recipe-mealtime_recipe_fkey"),
                     j =>
                     {
@@ -221,6 +221,47 @@ public partial class RecipeSiteContext : DbContext
             entity.Property(e => e.PasswordHash).HasColumnName("password_hash");
             entity.Property(e => e.PasswordSalt).HasColumnName("password_salt");
             entity.Property(e => e.PublicId).HasColumnName("public_id");
+
+            entity.HasMany(d => d.FavoriteRecipes).WithMany(p => p.Users)
+                .UsingEntity<Dictionary<string, object>>(
+                    "UserFavoriteRecipe",
+                    r => r.HasOne<Recipe>().WithMany()
+                        .HasForeignKey("Recipe")
+                        .HasConstraintName("user_favorite_recipe_recipe_fkey"),
+                    l => l.HasOne<User>().WithMany()
+                        .HasForeignKey("User")
+                        .HasConstraintName("user_favorite_recipe_user_fkey"),
+                    j =>
+                    {
+                        j.HasKey("User", "Recipe").HasName("user_favorite_recipe_pkey");
+                        j.ToTable("user_favorite_recipe");
+                        j.IndexerProperty<int>("User").HasColumnName("user");
+                        j.IndexerProperty<int>("Recipe").HasColumnName("recipe");
+                    });
+        });
+
+        modelBuilder.Entity<UserMenu>(entity =>
+        {
+            entity.HasKey(e => new { e.User, e.Day, e.Mealtime }).HasName("user_menu_pkey");
+
+            entity.ToTable("user_menu");
+
+            entity.Property(e => e.User).HasColumnName("user");
+            entity.Property(e => e.Day).HasColumnName("day");
+            entity.Property(e => e.Mealtime).HasColumnName("mealtime");
+            entity.Property(e => e.Recipe).HasColumnName("recipe");
+
+            entity.HasOne(d => d.MealtimeNavigation).WithMany(p => p.UserMenus)
+                .HasForeignKey(d => d.Mealtime)
+                .HasConstraintName("user_menu_mealtime_fkey");
+
+            entity.HasOne(d => d.RecipeNavigation).WithMany(p => p.UserMenus)
+                .HasForeignKey(d => d.Recipe)
+                .HasConstraintName("user_menu_recipe_fkey");
+
+            entity.HasOne(d => d.UserNavigation).WithMany(p => p.UserMenus)
+                .HasForeignKey(d => d.User)
+                .HasConstraintName("user_menu_user_fkey");
         });
 
         modelBuilder.Entity<UserRefreshToken>(entity =>

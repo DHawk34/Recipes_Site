@@ -15,4 +15,9 @@ public static class AutoMapperConfig
         cfg.CreateMap<User, UserDtoRecipe>();
         cfg.CreateMap<Recipe, RecipeDtoBase>();
     });
+
+    public static MapperConfiguration RecipeToRecipeDTO = new MapperConfiguration(cfg =>
+    {
+        cfg.CreateMap<Recipe, RecipeDtoBase>();
+    });
 }

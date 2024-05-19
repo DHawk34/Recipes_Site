@@ -22,7 +22,6 @@ export function Recipe() {
     // const [recipe, setRecipe] = useState<RecipeModel>();
     const [ingredients, setIngredients] = useState<{ id: number, name: string, amountPerOne: number }[]>();
     const [portionCount, setPortionCount] = useState<number>(1);
-    const [cookies, setCookie, removeCookie] = useCookies(['favoriteDishes']);
     const [isFavorite, setFavorite] = useState(false);
 
     const params = useParams()
@@ -36,6 +35,7 @@ export function Recipe() {
     //recipes
     const { data: recipeFromServerResponse } = useQuery(`recipe-${recipeId}`, () => fetchData(`${ENDPOINTS.RECIPES.GET}?id=${recipeId}`));
     let recipe: RecipeModel = recipeFromServerResponse
+    console.log(recipe)
 
     const componentRef = useRef(null);
 
@@ -50,19 +50,15 @@ export function Recipe() {
     });
 
     const handleFavorite = () => {
-        var favoriteDishes = cookies['favoriteDishes'] as number[];
-        if (!favoriteDishes)
-            favoriteDishes = [];
-
-        console.log(favoriteDishes);
         if (isFavorite) {
-            var index = favoriteDishes.indexOf(recipe.id);
-            favoriteDishes.splice(index, 1);
-            setCookie("favoriteDishes", favoriteDishes, { path: '/', maxAge: 1707109200 });
+            axios.delete(`${ENDPOINTS.USERS.DELETE_FAVORITE}?id=${recipe.id}`)
+            .then(_ => console.log('delete from fav'))
+            .catch(e => console.log(e))
         }
         else {
-            favoriteDishes.push(recipe.id);
-            setCookie("favoriteDishes", favoriteDishes, { path: '/', maxAge: 1707109200 });
+            axios.post(`${ENDPOINTS.USERS.ADD_FAVORITE}?id=${recipe.id}`)
+            .then(_ => console.log('add to fav'))
+            .catch(e => console.log(e))
         }
 
         setFavorite(!isFavorite);
@@ -105,9 +101,7 @@ export function Recipe() {
         addMeta('description', recipe.name);
         addMeta('keywords', ingrString);
 
-        var favoriteDishes = cookies['favoriteDishes'] as number[];
-
-        if (favoriteDishes?.includes(recipe.id)) {
+        if (recipe.isFavorite) {
             setFavorite(true);
         }
 

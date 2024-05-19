@@ -11,5 +11,8 @@ public partial class Mealtime
     public string Name { get; set; } = null!;
 
     [JsonIgnore]
+    public virtual ICollection<UserMenu> UserMenus { get; set; } = new List<UserMenu>();
+
+    [JsonIgnore]
     public virtual ICollection<Recipe> Recipes { get; set; } = new List<Recipe>();
 }

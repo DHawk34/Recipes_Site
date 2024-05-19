@@ -13,6 +13,7 @@ const ENDPOINTS = {
 
     RECIPES: {
         SEARCH: API_SERVER + "/recipe/search",
+        SEARCH_FAVORITE: API_SERVER + "/recipe/search/favorite",
         ADD: API_SERVER + "/recipe/add",
         UPDATE: API_SERVER + "/recipe/update",
         DELETE: API_SERVER + "/recipe/delete",
@@ -25,6 +26,9 @@ const ENDPOINTS = {
         INFO: API_SERVER + "/user",
         GET: API_SERVER + "/user/",
         DELETE: API_SERVER + "/user",
+        ADD_FAVORITE: API_SERVER + "/user/favorite/add",
+        DELETE_FAVORITE: API_SERVER + "/user/favorite/delete",
+        GET_FAVORITE: API_SERVER + "/user/favorite",
     },
 
     CATALOG:{

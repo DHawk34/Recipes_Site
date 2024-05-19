@@ -1,4 +1,5 @@
-﻿using Recipes_API.Models;
+﻿using Recipes_API.Configuration;
+using Recipes_API.Models;
 using Recipes_API.Models.CustomModels;
 using Recipes_API.Repositories;
 using Recipes_API.Services;
@@ -16,6 +17,16 @@ public static class UsersEndpoints
         app.MapGet("/user", GetUserAsync)
             .RequireAuthorization()
             .Produces<UserDtoRecipe>();
+
+        app.MapGet("/user/favorite", GetFavoriteRecipesAsync)
+            .RequireAuthorization()
+            .Produces<List<RecipeDtoBase>>();
+
+        app.MapPost("/user/favorite/add", AddFavoriteAsync)
+            .RequireAuthorization();
+
+        app.MapDelete("/user/favorite/delete", RemoveFavoriteAsync)
+            .RequireAuthorization();
 
         app.MapGet("/user/{userPublicID}", GetUserByPublicIDAsync)
             .Produces<UserDtoRecipe>();
@@ -68,5 +79,58 @@ public static class UsersEndpoints
         }
 
         return Results.BadRequest($"Could not delete user `{user.Name}`");
+    }
+
+
+    internal static async Task<IResult> AddFavoriteAsync(HttpContext context, UsersRepository usersRepository, RecipeRepository recipeRepository, int id)
+    {
+        var userTokenInfo = await AuthService.TryGetUserInfoFromHttpContextAsync(context);
+        if (userTokenInfo == null)
+            return Results.Unauthorized();
+
+        var user = await usersRepository.GetUserByPublicIdAsync(userTokenInfo.PublicID);
+        if (user == null)
+            return Results.BadRequest();
+
+        var recipe = await recipeRepository.GetAsync(id);
+        if (recipe == null)
+            return Results.BadRequest();
+
+        return await usersRepository.AddFavoriteAsync(user, recipe);
+    }
+
+    internal static async Task<IResult> RemoveFavoriteAsync(HttpContext context, UsersRepository usersRepository, RecipeRepository recipeRepository, int id)
+    {
+        var userTokenInfo = await AuthService.TryGetUserInfoFromHttpContextAsync(context);
+        if (userTokenInfo == null)
+            return Results.Unauthorized();
+
+        var user = await usersRepository.GetUserByPublicIdAsync(userTokenInfo.PublicID);
+        if (user == null)
+            return Results.BadRequest();
+
+        var recipe = await recipeRepository.GetAsync(id);
+        if (recipe == null)
+            return Results.BadRequest();
+
+        return await usersRepository.RemoveFavoriteAsync(user, recipe);
+    }
+
+    internal static async Task<IResult> GetFavoriteRecipesAsync(HttpContext context, UsersRepository usersRepository)
+    {
+        var userTokenInfo = await AuthService.TryGetUserInfoFromHttpContextAsync(context);
+        if (userTokenInfo == null)
+            return Results.Unauthorized();
+
+        var user = await usersRepository.GetUserByPublicIdAsync(userTokenInfo.PublicID);
+        if (user == null)
+            return Results.BadRequest();
+
+        var mapper = AutoMapperConfig.RecipeToRecipeDTO.CreateMapper();
+
+        var favoriteList = user.FavoriteRecipes.ToList();
+        var favoriteListDto = mapper.Map<List<RecipeDtoBase>>(favoriteList);
+
+        return Results.Ok(favoriteListDto);
     }
 }
