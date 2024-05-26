@@ -31,6 +31,11 @@ const ENDPOINTS = {
         GET_FAVORITE: API_SERVER + "/user/favorite",
     },
 
+    USERMENU: {
+        GENERATE : API_SERVER + "/usermenu/generate",
+        GET : API_SERVER + "/usermenu"
+    },
+
     CATALOG:{
         GROUPS: API_SERVER + "/catalog/groups",
         CUISINES: API_SERVER + "/catalog/cuisines",

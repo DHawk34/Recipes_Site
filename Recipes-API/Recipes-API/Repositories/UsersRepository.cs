@@ -20,12 +20,17 @@ public class UsersRepository
     {
         return await dbContext.Users.FindAsync(userID);
     }
-    public async Task<UserDtoRecipe?> GetUserDtoByPublicIdAsync(Guid publicID)
+    public async Task<UserDtoRecipe?> GetUserDtoByPublicIdAsync(HttpContext context, AuthService auth, Guid publicID)
     {
+        var userInfo = await auth.TryGetUserInfoFromHttpContextWithValidationAsync(context);
+
         var mapper = AutoMapperConfig.UserWithRecipesConfig.CreateMapper();
 
         var userEntity = await dbContext.Users.Include(x => x.Recipes).ThenInclude(x => x.RecipeIngredients).ThenInclude(x => x.IngredientNavigation).FirstOrDefaultAsync(x => x.PublicId == publicID);
         var userDto = mapper.Map<UserDtoRecipe>(userEntity);
+
+        if(userInfo != null)
+            userDto.isMe = userDto.PublicId == userInfo.PublicID;
 
         return userDto;
     }

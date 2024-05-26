@@ -2,6 +2,19 @@
 
 namespace Recipes_API.Models.CustomModels;
 
+public record RecipeDtoMin
+{
+    public int Id { get; set; }
+
+    public int FinishImage { get; set; }
+
+    public string Name { get; set; } = null!;
+
+    public string CookTime { get; set; } = null!;
+
+    public virtual ICollection<RecipeIngredient> RecipeIngredients { get; set; } = new List<RecipeIngredient>();
+
+}
 public record RecipeDtoBase
 {
     public int Id { get; set; }
@@ -33,7 +46,7 @@ public record RecipeDtoBase
     public virtual ICollection<Mealtime> Mealtimes { get; set; } = new List<Mealtime>();
 }
 
-public record RecipeDtoUser: RecipeDtoBase
+public record RecipeDtoUser : RecipeDtoBase
 {
     public virtual UserDtoBase OwnerNavigation { get; set; } = null!;
     public bool IsOwner { get; set; } = false!;

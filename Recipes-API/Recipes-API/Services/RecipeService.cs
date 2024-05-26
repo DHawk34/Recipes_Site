@@ -191,7 +191,7 @@ public class RecipeService
         return recipeDto;
     }
 
-    public async Task<List<Recipe>> SearchRecipesAsync(string? name, int[]? a_ingr, int[]? r_ingr, int? n_cuisine, int? group, int? meal_t, long? time, int? difficult, int? hot, int? count, int? page, List<Recipe>? recipeSource = null)
+    public async Task<List<Recipe>> SearchRecipesAsync(string? name, int[]? a_ingr, int[]? r_ingr, int? n_cuisine, int? group, int? meal_t, long? time, int? difficult, int? hot, string? userPublicId, int? count, int? page, List<Recipe>? recipeSource = null)
     {
         (int hours, int minutes) getTime(string x)
         {
@@ -219,6 +219,9 @@ public class RecipeService
 
         if (meal_t != null)
             query = query.Where(x => x.Mealtimes.Any(y => y.Id == meal_t));
+
+        if (userPublicId != null)
+            query = query.Where(x => x.OwnerNavigation != null ? x.OwnerNavigation.PublicId == Guid.Parse(userPublicId) : x.Owner == -1);
 
         if (difficult != null)
         {

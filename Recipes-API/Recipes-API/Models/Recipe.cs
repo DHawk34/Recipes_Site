@@ -1,5 +1,4 @@
-﻿using Recipes_API.Scaffold;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
@@ -38,7 +37,7 @@ public partial class Recipe
     public virtual NationalCuisine? NationalCuisineNavigation { get; set; }
 
     [JsonIgnore]
-    public virtual User? OwnerNavigation { get; set; }
+    public virtual User? OwnerNavigation { get; set; } 
 
     public virtual ICollection<RecipeIngredient> RecipeIngredients { get; set; } = new List<RecipeIngredient>();
 

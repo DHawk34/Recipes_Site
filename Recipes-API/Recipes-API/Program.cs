@@ -35,6 +35,7 @@ builder.Services.AddTransient<RecipeGroupRepository>();
 builder.Services.AddTransient<UserRefreshTokenRepository>();
 builder.Services.AddTransient<UsersRepository>();
 builder.Services.AddTransient<MealtimeRepository>();
+builder.Services.AddTransient<UserMenuRepository>();
 
 
 builder.Services.AddTransient<RecipeService>();
@@ -91,6 +92,7 @@ app.UseAuthorization();
 app.MapAuthEndpoints();
 app.MapRecipeEndpoints();
 app.MapUsersEndpoints();
+app.MapUserMenuEndpoints();
 
 app.MapGet("/ingredients", async (IngredientsRepository repo) =>
 {

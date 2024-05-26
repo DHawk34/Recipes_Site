@@ -215,12 +215,19 @@ public partial class RecipeSiteContext : DbContext
             entity.Property(e => e.Login)
                 .HasMaxLength(32)
                 .HasColumnName("login");
+            entity.Property(e => e.MenuCuisine)
+                .HasDefaultValueSql("'-1'::integer")
+                .HasColumnName("menu_cuisine");
             entity.Property(e => e.Name)
                 .HasMaxLength(32)
                 .HasColumnName("name");
             entity.Property(e => e.PasswordHash).HasColumnName("password_hash");
             entity.Property(e => e.PasswordSalt).HasColumnName("password_salt");
             entity.Property(e => e.PublicId).HasColumnName("public_id");
+
+            entity.HasOne(d => d.MenuCuisineNavigation).WithMany(p => p.Users)
+                .HasForeignKey(d => d.MenuCuisine)
+                .HasConstraintName("users_menu_cuisine_fkey");
 
             entity.HasMany(d => d.FavoriteRecipes).WithMany(p => p.Users)
                 .UsingEntity<Dictionary<string, object>>(

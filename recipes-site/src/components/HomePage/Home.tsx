@@ -23,7 +23,7 @@ export function Home() {
   const recipeCuisines: Array<RecipeModel> = cuisinesCatalogFromServerResponse
 
   //news
-  const { data: newsCatalogFromServerResponse } = useQuery('catalog_news', () => fetchData(`${ENDPOINTS.CATALOG.NEWS}?count=4`));
+  const { data: newsCatalogFromServerResponse } = useQuery('catalog_news', () => fetchData(`${ENDPOINTS.CATALOG.NEWS}?count=6`));
   const recipeNews: Array<RecipeModel> = newsCatalogFromServerResponse
 
 

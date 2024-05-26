@@ -31,7 +31,8 @@ public static class UsersEndpoints
         app.MapGet("/user/{userPublicID}", GetUserByPublicIDAsync)
             .Produces<UserDtoRecipe>();
 
-        app.MapDelete("/user", DeleteUserAsync);
+        app.MapDelete("/user", DeleteUserAsync)
+            .RequireAuthorization();
     }
 
 
@@ -41,21 +42,21 @@ public static class UsersEndpoints
         return Results.Ok(await usersRepository.GetAllUsersAsync());
     }
 
-    internal static async Task<IResult> GetUserAsync(HttpContext context, UsersRepository usersRepository)
+    internal static async Task<IResult> GetUserAsync(HttpContext context, AuthService auth, UsersRepository usersRepository)
     {
         var userInfo = await AuthService.TryGetUserInfoFromHttpContextAsync(context);
         if (userInfo is null) return Results.Unauthorized();
 
-        var user = await usersRepository.GetUserDtoByPublicIdAsync(userInfo.PublicID);
+        var user = await usersRepository.GetUserDtoByPublicIdAsync(context, auth, userInfo.PublicID);
 
         return user != null
             ? Results.Ok(user)
             : Results.NotFound("User not found");
     }
 
-    internal static async Task<IResult> GetUserByPublicIDAsync(UsersRepository usersRepository, string userPublicID)
+    internal static async Task<IResult> GetUserByPublicIDAsync(HttpContext context, AuthService auth, UsersRepository usersRepository, string userPublicID)
     {
-        var user = await usersRepository.GetUserDtoByPublicIdAsync(Guid.Parse(userPublicID));
+        var user = await usersRepository.GetUserDtoByPublicIdAsync(context, auth, Guid.Parse(userPublicID));
 
         return user != null
             ? Results.Ok(user)

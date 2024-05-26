@@ -30,12 +30,10 @@ export function Recipe() {
     const navigate = useNavigate();
 
     const { data: isAuth} = useQuery(`is-auth`, () => isAuthorized(), {staleTime: 0, cacheTime: 0});
-    console.log(isAuth)
 
     //recipes
     const { data: recipeFromServerResponse } = useQuery(`recipe-${recipeId}`, () => fetchData(`${ENDPOINTS.RECIPES.GET}?id=${recipeId}`));
     let recipe: RecipeModel = recipeFromServerResponse
-    console.log(recipe)
 
     const componentRef = useRef(null);
 
@@ -85,7 +83,6 @@ export function Recipe() {
         if (!recipe)
             return
 
-        console.log(recipe)
         recipe?.recipeInstructions.sort(instructionStepSortFunc)
 
         setPortionCount(recipe.portionCount)

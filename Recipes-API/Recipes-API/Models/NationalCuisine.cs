@@ -12,4 +12,7 @@ public partial class NationalCuisine
 
     [JsonIgnore]
     public virtual ICollection<Recipe> Recipes { get; set; } = new List<Recipe>();
+
+    [JsonIgnore]
+    public virtual ICollection<User> Users { get; set; } = new List<User>();
 }

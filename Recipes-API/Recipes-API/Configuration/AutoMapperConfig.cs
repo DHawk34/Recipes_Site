@@ -20,4 +20,10 @@ public static class AutoMapperConfig
     {
         cfg.CreateMap<Recipe, RecipeDtoBase>();
     });
+
+    public static MapperConfiguration UserMenuToUserMenuDTO = new MapperConfiguration(cfg =>
+    {
+        cfg.CreateMap<UserMenu, UserMenuItemDto>();
+        cfg.CreateMap<Recipe, RecipeDtoMin>();
+    });
 }

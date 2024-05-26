@@ -25,6 +25,11 @@ public partial class User
     [JsonIgnore]
     public string Email { get; set; } = null!;
 
+    [JsonIgnore]
+    public int? MenuCuisine { get; set; }
+
+    [JsonIgnore]
+    public virtual NationalCuisine? MenuCuisineNavigation { get; set; }
     public virtual ICollection<Recipe> Recipes { get; set; } = new List<Recipe>();
     public virtual ICollection<UserMenu> UserMenus { get; set; } = new List<UserMenu>();
     public virtual ICollection<Recipe> FavoriteRecipes { get; set; } = new List<Recipe>();

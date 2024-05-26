@@ -42,6 +42,10 @@ export function Recipes() {
   // const favoriteDishes = cookies["favoriteDishes"] as string[];
 
   const [recipeParams, setRecipeParams] = useState<URLSearchParams>(new URLSearchParams())
+  const [pageParams, setPageParams] = useState<URLSearchParams>(new URLSearchParams())
+  const [defaultParams, setDefaultParams] = useState<URLSearchParams>(new URLSearchParams())
+
+
   const recipePerPage = 10
 
   function resetStates() {
@@ -117,6 +121,7 @@ export function Recipes() {
   async function fetchRecipe() {
     let url = new URL(match ? ENDPOINTS.RECIPES.SEARCH_FAVORITE : ENDPOINTS.RECIPES.SEARCH)
     let name = searchParams.get('recipe_search')
+    let user = searchParams.get('user')
     let a_ingr = searchParams.getAll('a_ingr')
     let r_ingr = searchParams.getAll('r_ingr')
     let n_cuisine = searchParams.get('n_cuisine')
@@ -129,6 +134,9 @@ export function Recipes() {
 
     if (name)
       url.searchParams.append('name', name)
+
+    if (user)
+      url.searchParams.append('user', user)
 
     if (n_cuisine)
       url.searchParams.append('n_cuisine', n_cuisine)
@@ -215,10 +223,23 @@ export function Recipes() {
     return options
   }
 
+  const mySetSearchParams = (...args: URLSearchParams[]) => {
+    let allParams: { [x: string]: string } = {}
+
+    args.forEach(urlParams => {
+      allParams = { ...allParams, ...Object.fromEntries(urlParams) }
+    });
+
+    let searchParam = new URLSearchParams(allParams)
+    setSearchParams(searchParam)
+  }
+
   const changePage = (page: number) => {
-    var pageParams = new URLSearchParams(recipeParams)
+    var pageParams = new URLSearchParams()
     pageParams.append("page", page.toString())
-    setSearchParams(pageParams)
+    setPageParams(pageParams)
+
+    mySetSearchParams(defaultParams, recipeParams, pageParams)
     // navigate('?' + "page=" + page.toString())
   }
 
@@ -247,7 +268,7 @@ export function Recipes() {
     });
 
     setRecipeParams(recipeParams)
-    setSearchParams(recipeParams)
+    mySetSearchParams(defaultParams, recipeParams, pageParams)
     // navigate('?' + searchParams.toString())
 
     setShowExtraSearch(false)
@@ -255,9 +276,21 @@ export function Recipes() {
     extraSearchContainer?.classList.add(styles.height_0)
   }
 
-  useEffect(() => {
-    recipeRefetch()
+  // useEffect(() => {
+  //   console.log('fire')
+  //   mySetSearchParams()
+  // }, [recipeParams, defaultParams, pageParams])
 
+  useEffect(() => {
+    let defaultSearchParams = new URLSearchParams()
+
+    let user = searchParams.get('user')
+    if (user)
+      defaultSearchParams.set('user', user)
+
+    setDefaultParams(defaultSearchParams)
+
+    recipeRefetch()
 
     let time = searchParams.get('time')
     let timeRadio = document.getElementById(`time-${time}`) as HTMLInputElement;

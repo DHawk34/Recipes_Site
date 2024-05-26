@@ -2,17 +2,19 @@ import React, { useEffect, useReducer, useRef, useState } from 'react';
 import { NavLink, useLocation, useNavigate, useParams } from 'react-router-dom'
 import styles from './ProfilePage.module.css'
 import { ReactComponent as Profile } from '@/assets/profile.svg';
+import { ReactComponent as Refresh } from '@/assets/refresh.svg';
 import axios from 'axios';
 import { useQuery } from 'react-query';
 import ENDPOINTS from '@/endPoints';
 import UserModel from '@/models/userModel';
 import { SelectStyle } from '@/styles';
 import { MyOptionTypeInt } from '@/models/optionType';
-import Select from 'react-select';
+import Select, { MultiValue, SingleValue } from 'react-select';
 import { div, fetchData } from '@/utils/utils';
 import IdNameModel from '@/models/idNameModel';
-import RecipeModel from '@/models/recipeModel';
 import { RecipeCard } from '../RecipeCard/RecipeCard';
+import RecipeModel from '@/models/recipeModel';
+import UserMenuModel, { UserMenuItemModel } from '@/models/userMenuModel';
 
 const mySelectStyle = SelectStyle<MyOptionTypeInt>()
 
@@ -21,6 +23,8 @@ export function ProfilePage() {
   const location = useLocation();
   const params = useParams()
   const userID = params.uid;
+  const [cuisineOption, setCuisineOption] = useState<MyOptionTypeInt | undefined>(undefined);
+  const [userMenu, setUserMenu] = useState<UserMenuModel | undefined>(undefined)
 
   useEffect(() => {
     document.title = 'Профиль'
@@ -32,8 +36,6 @@ export function ProfilePage() {
   useEffect(() => {
     if (!user || userID)
       return;
-
-    console.log(user)
 
     window.history.replaceState(null, '', `${location.pathname}/${user.publicId}`)
   }, [user, userID])
@@ -52,45 +54,86 @@ export function ProfilePage() {
     allCuisines.push({ value: element.id, label: element.name });
   });
 
-  async function fetchRecipe() {
-    let url = new URL(ENDPOINTS.RECIPES.SEARCH)
+  const handleCuisineChange = (selectedOption?: MultiValue<MyOptionTypeInt> | SingleValue<MyOptionTypeInt>) => {
+    let newVal: MyOptionTypeInt | undefined = undefined
+    if (typeof (selectedOption) === 'number') {
+      newVal = allCuisines.at(selectedOption as any)
+      setCuisineOption(newVal);
+    }
+    else {
+      newVal = selectedOption as MyOptionTypeInt
+      setCuisineOption(selectedOption as MyOptionTypeInt);
+    }
 
-    return axios.get(url.toString())
-      .then(res => res.data)
+    if (!newVal)
+      return
+
+    axios.post(`${ENDPOINTS.USERMENU.GENERATE}?n_cuisine=${newVal.value}`)
+      .then((res) => setUserMenu(res.data))
   }
 
-  const { data: recipesFromServerResponse, refetch: recipeRefetch } = useQuery(['recipes'], fetchRecipe);
-  var recipes: Array<RecipeModel> = recipesFromServerResponse
+  const regenerateMenu = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    if (!cuisineOption)
+      return
 
-  var days = ['Завтрак', 'Обед', 'Ужин']
+    axios.post(`${ENDPOINTS.USERMENU.GENERATE}?n_cuisine=${cuisineOption.value}`)
+      .then((res) => setUserMenu(res.data))
+  }
 
-  let recipeItems = recipes?.map((recipe: RecipeModel, index: number) => {
-    let row = div(index, 7) + 2
-    let column = (index) - (row - 2) * 7 + 2
 
-    // console.log({ row, column })
+  const { data: usermenuOldFromServerResponse } = useQuery(['usermenu-old'], () => fetchData(ENDPOINTS.USERMENU.GET));
+  var oldUserMenu: UserMenuModel = usermenuOldFromServerResponse
 
-    return <RecipeCard mini recipe={recipe} key={index} className={styles.row_gap} style={{ gridArea: `${row} / ${column} / ${row + 1} / ${column + 1}` }} />
-    // return <RecipeCard recipe={recipe} key={index} />
+  useEffect(() => {
+    if (!oldUserMenu)
+      return
+
+    setUserMenu(oldUserMenu)
+    console.log(oldUserMenu)
+
+    setCuisineOption(allCuisines.find(x => x.value === oldUserMenu.nationalCuisine))
+  }, [oldUserMenu])
+
+  let recipeItems = userMenu?.menu.map((menu: UserMenuItemModel, index: number) => {
+    let row = menu.mealtimeNavigation.id + 1
+    let column = menu.day + 1
+
+    return <RecipeCard mini recipe={menu.recipeNavigation} key={index} className={styles.row_gap} style={{ gridArea: `${row} / ${column} / ${row + 1} / ${column + 1}` }} />
+  })
+
+  let userRecipes = user?.recipes.map((recipe: RecipeModel, index: number) => {
+    return <RecipeCard mini recipe={recipe} key={index} />
   })
 
   return (
     <div id={styles.profile_container}>
-      {user ? (
-        <>
-          <div id={styles.profile_icon}>
-            <Profile width='150px' height='150px' />
-            <p>{user.name}</p>
+      {user && <>
+        <div id={styles.profile_icon}>
+          <Profile width='150px' height='150px' />
+          <p>{user.name}</p>
+        </div>
+
+        <div id={styles.user_recipe_label}>
+          <h3>{user.isMe ? 'Ваши рецепты' : 'Рецепты пользователя'}</h3>
+          <NavLink to={`/recipes?user=${user.publicId}`} className='underline clickable inherit_color'>{'Подробнее →'}</NavLink>
+        </div>
+
+        {userRecipes?.length > 0 &&
+          <div id={styles.user_recipes}>
+            {userRecipes}
           </div>
+        }
 
-          <h3>Ваши рецепты</h3>
-
+        {user.isMe && <>
           <div id={styles.menu_label}>
-            <h3>Ваше меню</h3>
+            <div className='horizontal'>
+              <h3>Ваше меню</h3>
+              <button id={styles.reset_button} onClick={regenerateMenu}><Refresh width='20px' height='20px' /></button>
+            </div>
 
             <div id={styles.cuisine_div}>
               <p>Кухня</p>
-              <Select id={styles.cuisine_select} options={allCuisines} name='n_cuisine' placeholder='Выберите кухню' styles={mySelectStyle} noOptionsMessage={() => 'Кухня не найдена'} />
+              <Select onChange={handleCuisineChange} id={styles.cuisine_select} value={cuisineOption} options={allCuisines} name='n_cuisine' placeholder='Выберите кухню' styles={mySelectStyle} noOptionsMessage={() => 'Кухня не найдена'} />
             </div>
           </div>
 
@@ -118,13 +161,10 @@ export function ProfilePage() {
             <p style={{ gridArea: '1 / 7 / 2 / 8' }}>СБ</p>
             <p style={{ gridArea: '1 / 8 / 2 / 9' }}>ВС</p>
 
-            {recipes ? recipeItems : null}
+            {userMenu ? recipeItems : null}
           </div>
-          {/* <div id={styles.menu_div}>
-
-          </div> */}
-        </>
-      ) : null}
+        </>}
+      </>}
     </div>
   );
   //}

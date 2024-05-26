@@ -23,4 +23,5 @@ public record UserDtoBase
 public record UserDtoRecipe : UserDtoBase
 {
     public virtual ICollection<RecipeDtoBase> Recipes { get; set; } = new List<RecipeDtoBase>();
+    public bool isMe { get; set; } = false!;
 }

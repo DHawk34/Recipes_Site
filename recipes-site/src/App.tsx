@@ -24,7 +24,7 @@ export function App() {
         <Route path='/register' element={<RequireAuth onOk={<AuthPage key='register' />} inverse onFailTo='/profile' />} />
         <Route path='/login' element={<RequireAuth onOk={<AuthPage key='login' />} inverse onFailTo='/profile' />} />
         <Route path='/profile' element={<RequireAuth onOk={<ProfilePage key='profile' />} />} />
-        <Route path='/profile/:uid' element={<ProfilePage />} />
+        <Route path='/profile/:uid' element={<RequireAuth onOk={<ProfilePage />} onFailTo='?'/>} />
         <Route path='/recipes/favorite' element={<RequireAuth onOk={<Recipes key='fav_recipes' />} />} />
         <Route path='/recipes/:id' element={<RequireAuth onOk={<Recipe />} onFailTo='?' />} />
         <Route path='/recipes/:id/edit' element={<RequireAuth onOk={<AddRecipe key='editRecipe' />} />} />
