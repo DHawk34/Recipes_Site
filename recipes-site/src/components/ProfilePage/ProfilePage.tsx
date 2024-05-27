@@ -1,5 +1,5 @@
-import React, { useEffect, useReducer, useRef, useState } from 'react';
-import { NavLink, useLocation, useNavigate, useParams } from 'react-router-dom'
+import React, { useEffect, useState } from 'react';
+import { NavLink, useLocation, useParams } from 'react-router-dom'
 import styles from './ProfilePage.module.css'
 import { ReactComponent as Profile } from '@/assets/profile.svg';
 import { ReactComponent as Refresh } from '@/assets/refresh.svg';
@@ -10,7 +10,7 @@ import UserModel from '@/models/userModel';
 import { SelectStyle } from '@/styles';
 import { MyOptionTypeInt } from '@/models/optionType';
 import Select, { MultiValue, SingleValue } from 'react-select';
-import { div, fetchData } from '@/utils/utils';
+import { fetchData } from '@/utils/utils';
 import IdNameModel from '@/models/idNameModel';
 import { RecipeCard } from '../RecipeCard/RecipeCard';
 import RecipeModel from '@/models/recipeModel';
