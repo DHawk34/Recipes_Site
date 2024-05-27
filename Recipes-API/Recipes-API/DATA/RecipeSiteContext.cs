@@ -39,9 +39,9 @@ public partial class RecipeSiteContext : DbContext
 
     public virtual DbSet<UserRefreshToken> UserRefreshTokens { get; set; }
 
-    //    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-    //        => optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=recipe_site;Username=neo;Password=admin;");
+//    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+//        => optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=recipe_site;Username=neo;Password=admin;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -52,7 +52,9 @@ public partial class RecipeSiteContext : DbContext
             entity.ToTable("images");
 
             entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.ContentType).HasColumnName("content_type");
+            entity.Property(e => e.ContentType)
+                .HasMaxLength(256)
+                .HasColumnName("content_type");
             entity.Property(e => e.Data).HasColumnName("data");
         });
 
@@ -63,7 +65,9 @@ public partial class RecipeSiteContext : DbContext
             entity.ToTable("ingredients");
 
             entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.Name).HasColumnName("name");
+            entity.Property(e => e.Name)
+                .HasMaxLength(256)
+                .HasColumnName("name");
         });
 
         modelBuilder.Entity<Mealtime>(entity =>
@@ -87,7 +91,9 @@ public partial class RecipeSiteContext : DbContext
             entity.ToTable("national_cuisine");
 
             entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.Name).HasColumnName("name");
+            entity.Property(e => e.Name)
+                .HasMaxLength(128)
+                .HasColumnName("name");
         });
 
         modelBuilder.Entity<Recipe>(entity =>
@@ -97,7 +103,9 @@ public partial class RecipeSiteContext : DbContext
             entity.ToTable("recipes");
 
             entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.CookTime).HasColumnName("cook_time");
+            entity.Property(e => e.CookTime)
+                .HasMaxLength(8)
+                .HasColumnName("cook_time");
             entity.Property(e => e.CreationTime)
                 .HasConversion(x => x.ToUniversalTime(), x => x.ToLocalTime())
                 .HasPrecision(0)
@@ -106,24 +114,27 @@ public partial class RecipeSiteContext : DbContext
             entity.Property(e => e.FinishImage).HasColumnName("finish_image");
             entity.Property(e => e.Group).HasColumnName("group");
             entity.Property(e => e.Hot).HasColumnName("hot");
-            entity.Property(e => e.Name).HasColumnName("name");
+            entity.Property(e => e.Name)
+                .HasMaxLength(64)
+                .HasColumnName("name");
             entity.Property(e => e.NationalCuisine).HasColumnName("national_cuisine");
             entity.Property(e => e.Owner).HasColumnName("owner");
             entity.Property(e => e.PortionCount).HasColumnName("portion_count");
 
             entity.HasOne(d => d.FinishImageNavigation).WithMany(p => p.Recipes)
                 .HasForeignKey(d => d.FinishImage)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("fk_recipe_group_images_0");
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("recipes_finish_image_fkey");
 
             entity.HasOne(d => d.GroupNavigation).WithMany(p => p.Recipes)
                 .HasForeignKey(d => d.Group)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("fk_recipe_group_recipe_group_1");
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("recipes_group_fkey");
 
             entity.HasOne(d => d.NationalCuisineNavigation).WithMany(p => p.Recipes)
                 .HasForeignKey(d => d.NationalCuisine)
-                .HasConstraintName("fk_recipe_group_national_cuisine_2");
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("recipes_national_cuisine_fkey");
 
             entity.HasOne(d => d.OwnerNavigation).WithMany(p => p.Recipes)
                 .HasForeignKey(d => d.Owner)
@@ -155,7 +166,9 @@ public partial class RecipeSiteContext : DbContext
             entity.ToTable("recipe_group");
 
             entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.Name).HasColumnName("name");
+            entity.Property(e => e.Name)
+                .HasMaxLength(32)
+                .HasColumnName("name");
         });
 
         modelBuilder.Entity<RecipeIngredient>(entity =>
@@ -170,11 +183,12 @@ public partial class RecipeSiteContext : DbContext
 
             entity.HasOne(d => d.IngredientNavigation).WithMany(p => p.RecipeIngredients)
                 .HasForeignKey(d => d.Ingredient)
-                .HasConstraintName("fk_ingredient");
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("recipe-ingredients_ingredient_fkey");
 
             entity.HasOne(d => d.RecipeNavigation).WithMany(p => p.RecipeIngredients)
                 .HasForeignKey(d => d.Recipe)
-                .HasConstraintName("fk_recipe");
+                .HasConstraintName("recipe-ingredients_recipe_fkey");
         });
 
         modelBuilder.Entity<RecipeInstruction>(entity =>
@@ -192,12 +206,12 @@ public partial class RecipeSiteContext : DbContext
 
             entity.HasOne(d => d.InstructionImageNavigation).WithMany(p => p.RecipeInstructions)
                 .HasForeignKey(d => d.InstructionImage)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("fk_recipe-ingredients_images_0");
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("recipe-instructions_instruction_image_fkey");
 
             entity.HasOne(d => d.RecipeNavigation).WithMany(p => p.RecipeInstructions)
                 .HasForeignKey(d => d.Recipe)
-                .HasConstraintName("fk_recipe-ingredients_recipes_1");
+                .HasConstraintName("recipe-instructions_recipe_fkey");
         });
 
         modelBuilder.Entity<User>(entity =>
@@ -215,9 +229,7 @@ public partial class RecipeSiteContext : DbContext
             entity.Property(e => e.Login)
                 .HasMaxLength(32)
                 .HasColumnName("login");
-            entity.Property(e => e.MenuCuisine)
-                .HasDefaultValueSql("'-1'::integer")
-                .HasColumnName("menu_cuisine");
+            entity.Property(e => e.MenuCuisine).HasColumnName("menu_cuisine");
             entity.Property(e => e.Name)
                 .HasMaxLength(32)
                 .HasColumnName("name");
