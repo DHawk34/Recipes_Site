@@ -45,7 +45,7 @@ export const fetchData = async (method: string) => {
     })
 }
 
-export function div(x: number, y: number){
+export function div(x: number, y: number) {
   return (x - x % y) / y;
 }
 

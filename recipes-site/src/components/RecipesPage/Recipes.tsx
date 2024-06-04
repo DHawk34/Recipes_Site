@@ -224,13 +224,13 @@ export function Recipes() {
   }
 
   const mySetSearchParams = (...args: URLSearchParams[]) => {
-    let allParams: { [x: string]: string } = {}
-
+    let paramStr = ''
+    
     args.forEach(urlParams => {
-      allParams = { ...allParams, ...Object.fromEntries(urlParams) }
+      paramStr += urlParams.toString();
     });
 
-    let searchParam = new URLSearchParams(allParams)
+    let searchParam = new URLSearchParams(paramStr)
     setSearchParams(searchParam)
   }
 

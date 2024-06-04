@@ -1,4 +1,4 @@
-const API_SERVER = "http://192.168.88.17:5009"
+const API_SERVER = "http://192.168.56.1:5009"
 
 const ENDPOINTS = {
     AUTH:{

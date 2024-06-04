@@ -13,6 +13,10 @@ export function AuthPage() {
   const location = useLocation();
   const isLogin = location.pathname === "/login"
 
+  const [showLoginTip, setLoginTip] = useState<boolean>(false);
+  const [showPasswordTip, setPasswordTip] = useState<boolean>(false);
+  const [showPasswordWarnTip, setPasswordWarnTip] = useState<boolean>(false);
+
   const [searchParams] = useSearchParams()
   const redirectAfterLogin = searchParams.get(REDIRECT_QUERY_PARAM_NAME) ?? '/'
 
@@ -31,6 +35,11 @@ export function AuthPage() {
 
   const register = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    if (showLoginTip || showPasswordTip || showPasswordWarnTip) {
+      alert('Форма регистрации заполнена неправильно')
+      return
+    }
+
     const formData = new FormData(e.currentTarget)
     var jsonObj = formToJson(formData)
     var json = JSON.stringify(jsonObj);
@@ -40,8 +49,8 @@ export function AuthPage() {
       console.log('registered: ' + jsonObj.username)
       setTimeout(() => navigate(redirectAfterLogin), 1000)
     }).catch(e => {
+      alert(e?.response?.data?.message)
       console.error(e?.response?.data || e?.message || e)
-      // showWarningText(getErrorMessage(e))
     })
   }
 
@@ -58,9 +67,28 @@ export function AuthPage() {
       console.log('logged in as: ' + jsonObj.username)
       setTimeout(() => navigate(redirectAfterLogin), 1000)
     }).catch(e => {
+      alert(e?.response?.data)
       console.error(e?.response?.data || e?.message || e)
       // showWarningText(getErrorMessage(e))
     })
+  }
+
+  const checkLogin = (e: React.FormEvent<HTMLInputElement>) => {
+    var input = e.currentTarget.value;
+    setLoginTip(input.length < 6)
+  }
+
+  const checkPassword = (e: React.FormEvent<HTMLInputElement>) => {
+    var reg = /^.*(?=.{6,})(?=.*[a-zA-Z])(?=.*\d).*/
+    var input = e.currentTarget.value;
+    setPasswordTip(!reg.test(input))
+  }
+
+  const checkRepPassword = (e: React.FormEvent<HTMLInputElement>) => {
+    var rep_password = e.currentTarget.value;
+    var orig_password = (document.getElementById('orig_password') as HTMLInputElement)?.value
+    console.log(orig_password)
+    setPasswordWarnTip(orig_password !== rep_password)
   }
 
   return (
@@ -73,7 +101,8 @@ export function AuthPage() {
         </>)}
 
         <label htmlFor="username">Логин</label>
-        <input type='text' id='username' autoComplete='username' name='username' className={styles.input_field} required></input>
+        <input type='text' id='username' autoComplete='username' name='username' onInput={checkLogin} className={`${styles.input_field}`} required></input>
+        {showLoginTip && !isLogin && <p className={styles.tip}>Логин должен быть не менее 6 символов</p>}
 
         {!isLogin && (<>
           <label htmlFor="email">Почта</label>
@@ -81,11 +110,15 @@ export function AuthPage() {
         </>)}
 
         <label htmlFor="password">Пароль</label>
-        <input type='password' name='password' autoComplete={isLogin ? 'current-password' : 'new-password'} required className={styles.input_field}></input>
+        <input type='password' name='password' id='orig_password' autoComplete={isLogin ? 'current-password' : 'new-password'} onInput={checkPassword} required className={styles.input_field}></input>
+        {showPasswordTip && !isLogin &&
+          <p className={styles.tip}>Пароль должен содержать, как минимум, одну цифру и одну букву, и должен быть не менее 6 символов</p>}
 
         {!isLogin && (<>
           <label htmlFor="password">Повторите пароль</label>
-          <input type='password' name='password' autoComplete='new-password' required className={styles.input_field}></input>
+          <input type='password' name='password' id='rep_password' autoComplete='new-password' onInput={checkRepPassword} required className={styles.input_field}></input>
+          {showPasswordWarnTip &&
+            <p className={styles.tip}>Пароли не совпадают</p>}
         </>)}
 
         <button className='button' id={styles.submit_button} type='submit'>{isLogin ? 'Войти' : 'Зарегистрироваться'}</button>
