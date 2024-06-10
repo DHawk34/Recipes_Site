@@ -11,7 +11,6 @@ using Recipes_API.Repositories;
 using Recipes_API.Configuration;
 using Recipes_API.Extensions;
 using Recipes_API.Endpoints;
-using Recipes_API.Errors;
 
 namespace Recipes_API.Services;
 
@@ -250,23 +249,6 @@ public class AuthService
     {
         response.Cookies.Delete(ACCESS_TOKEN_COOKIE_NAME);
         response.Cookies.Delete(REFRESH_TOKEN_COOKIE_NAME);
-        //response.Cookies.Append(ACCESS_TOKEN_COOKIE_NAME, "", new CookieOptions()
-        //{
-        //    Path = "/",
-        //    SameSite = SameSiteMode.Strict,
-        //    Secure = false,
-        //    HttpOnly = true,
-        //    Expires = DateTime.UnixEpoch,
-        //});
-
-        //response.Cookies.Append(REFRESH_TOKEN_COOKIE_NAME, "", new CookieOptions()
-        //{
-        //    Path = AuthEndpoint.REFRESH_TOKEN_PATH,
-        //    SameSite = SameSiteMode.Strict,
-        //    Secure = false,
-        //    HttpOnly = true,
-        //    Expires = DateTime.UnixEpoch,
-        //});
     }
 
     #endregion

@@ -23,8 +23,6 @@ builder.Services.AddDbContext<RecipeSiteContext>(options =>
 
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
-//builder.Services.AddControllers().AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
-
 builder.Services.AddTransient<IngredientsRepository>();
 builder.Services.AddTransient<RecipeRepository>();
 builder.Services.AddTransient<NationalCuisineRepository>();
@@ -50,20 +48,6 @@ builder.Services.AddCORSPolicy(builder.Configuration);
 
 builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
 
-
-//builder.Services.AddCors(options =>
-//{
-//    options.AddPolicy("CORSPolicy",
-//        builder =>
-//        {
-//            builder
-//            .AllowAnyOrigin()
-//            .AllowAnyMethod()
-//            .AllowAnyHeader();
-//            //.WithOrigins("http://localhost:3000");
-//        });
-//});
-
 var app = builder.Build();
 
 app.UseCORSPolicy();
@@ -81,13 +65,9 @@ if (app.Environment.IsDevelopment())
 }
 
 
-app.UseHttpsRedirection(); //Можно убрать
+app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
-//app.UseSwagger();
-//app.UseSwaggerUI();
-
-//app.UseCors("CORSPolicy");
 
 app.MapAuthEndpoints();
 app.MapRecipeEndpoints();
