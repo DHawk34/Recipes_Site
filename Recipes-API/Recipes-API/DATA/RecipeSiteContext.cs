@@ -102,6 +102,18 @@ public partial class RecipeSiteContext : DbContext
 
             entity.ToTable("recipes");
 
+            entity.HasIndex(e => e.NationalCuisine, "rec_cuisine");
+
+            entity.HasIndex(e => e.Difficult, "rec_difficult");
+
+            entity.HasIndex(e => e.Group, "rec_group");
+
+            entity.HasIndex(e => e.Hot, "rec_hot");
+
+            entity.HasIndex(e => e.Name, "rec_name");
+
+            entity.HasIndex(e => e.Owner, "rec_owner");
+
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.CookTime)
                 .HasMaxLength(8)
@@ -120,6 +132,7 @@ public partial class RecipeSiteContext : DbContext
             entity.Property(e => e.NationalCuisine).HasColumnName("national_cuisine");
             entity.Property(e => e.Owner).HasColumnName("owner");
             entity.Property(e => e.PortionCount).HasColumnName("portion_count");
+            entity.Property(e => e.Verified).HasColumnName("verified");
 
             entity.HasOne(d => d.FinishImageNavigation).WithMany(p => p.Recipes)
                 .HasForeignKey(d => d.FinishImage)
@@ -223,6 +236,7 @@ public partial class RecipeSiteContext : DbContext
             entity.Property(e => e.Id)
                 .UseIdentityAlwaysColumn()
                 .HasColumnName("id");
+            entity.Property(e => e.Admin).HasColumnName("admin");
             entity.Property(e => e.Email)
                 .HasMaxLength(256)
                 .HasColumnName("email");

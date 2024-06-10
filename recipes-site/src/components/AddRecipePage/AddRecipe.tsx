@@ -113,8 +113,8 @@ export function AddRecipe() {
     useEffect(() => {
         if (!match || !recipe)
             return
-        
-        if(!recipe.isOwner)
+
+        if (!recipe.isOwner)
             navigate(`/recipes/${match?.params.id}`)
 
         recipe?.recipeInstructions.sort(instructionStepSortFunc)
@@ -346,10 +346,16 @@ export function AddRecipe() {
             return
         }
 
-        var n_cuisine = '';
+        console.log(nCuisineSelectedOption)
 
-        if (nCuisineSelectedOption)
-            n_cuisine = nCuisineSelectedOption.value;
+        var ncuisine_tmp = nationalCuisineSelect.getValue() as MyOptionTypeInt[]
+        if (ncuisine_tmp.length === 0 || nCuisineSelectedOption === undefined) {
+            document.getElementById('national_cuisine_field')?.scrollIntoView(false)
+            alert('Выберите национальную кухню для рецепта!')
+            return
+        }
+
+        var n_cuisine = nCuisineSelectedOption.value;
 
         if (difficult < 1) {
             alert('Выберите сложность!')
@@ -439,8 +445,10 @@ export function AddRecipe() {
         var portionCount = Number(element.value);
         portionCount += increment;
 
-        if (portionCount >= 1)
+        if (portionCount >= 1){
             element.value = portionCount.toString();
+            setPortion(portionCount)
+        }
     }
 
     const validateInputNumper = (e: React.ChangeEvent<HTMLInputElement>, min?: number, max?: number) => {
@@ -518,12 +526,30 @@ export function AddRecipe() {
             </Dropzone>
             <p>Название рецепта <sup className='red'>*</sup></p>
             <input className='input_field' id='recipe_name' name='recipe_name' type='text' placeholder='Например: Салат "Оливье"' required onFocus={(e) => clearValidate(e.target)} onBlur={(e) => validateInputField(e.target)}></input>
+
             <p>Группа <sup className='red'>*</sup></p>
-            <Select ref={(ref) => groupSelect = ref} options={groups} onChange={(val) => handleGroupChange(val)} value={groupSelectedOption} name='recipe_group' id='group_input_field' classNamePrefix='select_input_field_prefix' placeholder='Выберите группу' styles={mySelectStyle} onFocus={(e) => clearValidate(e.target, 'group_input_field')} onBlur={(e) => validateInputField(e.target, 'group_input_field', e.target.parentNode?.parentNode?.firstChild?.textContent !== 'Выберите группу' ? e.target.parentNode?.parentNode?.firstChild?.textContent : '')} noOptionsMessage={() => 'Такой группы нет'}></Select>
+            <Select ref={(ref) => groupSelect = ref} options={groups} onChange={(val) => handleGroupChange(val)}
+                value={groupSelectedOption} name='recipe_group' id='group_input_field' classNamePrefix='select_input_field_prefix'
+                placeholder='Выберите группу' styles={mySelectStyle}
+                onFocus={(e) => clearValidate(e.target, 'group_input_field')}
+                onBlur={(e) => validateInputField(e.target, 'group_input_field', e.target.parentNode?.parentNode?.firstChild?.textContent !== 'Выберите группу' ? e.target.parentNode?.parentNode?.firstChild?.textContent : '')}
+                noOptionsMessage={() => 'Такой группы нет'}></Select>
+
             <p>Предпочитаемый прием пищи <sup className='red'>*</sup></p>
-            <Select ref={(ref) => mealtimeSelect = ref} options={mealtimes} isMulti onChange={(val) => handleMealtimeChange(val)} value={mealtimeSelectedOption} name='recipe_mealtime' id='mealtime_input_field' classNamePrefix='select_input_field_prefix' placeholder='Выберите прием пищи' styles={mySelectStyle} onFocus={(e) => clearValidate(e.target, 'mealtime_input_field')} onBlur={(e) => validateInputField(e.target, 'mealtime_input_field', e.target.parentNode?.parentNode?.firstChild?.textContent !== 'Выберите прием пищи' ? e.target.parentNode?.parentNode?.firstChild?.textContent : '')} noOptionsMessage={() => 'Такого приема пищи нет'}></Select>
+            <Select ref={(ref) => mealtimeSelect = ref} options={mealtimes} isMulti onChange={(val) => handleMealtimeChange(val)}
+                value={mealtimeSelectedOption} name='recipe_mealtime' id='mealtime_input_field' classNamePrefix='select_input_field_prefix'
+                placeholder='Выберите прием пищи' styles={mySelectStyle}
+                onFocus={(e) => clearValidate(e.target, 'mealtime_input_field')}
+                onBlur={(e) => validateInputField(e.target, 'mealtime_input_field', e.target.parentNode?.parentNode?.firstChild?.textContent !== 'Выберите прием пищи' ? e.target.parentNode?.parentNode?.firstChild?.textContent : '')}
+                noOptionsMessage={() => 'Такого приема пищи нет'}></Select>
+
             <p>Национальная кухня<sup className='red'>*</sup></p>
-            <CreatableSelect ref={(ref) => nationalCuisineSelect = ref} options={allCuisines} onChange={(val) => handleCusineChange(val)} value={nCuisineSelectedOption} name='national_cuisine' id='national_cuisine' classNamePrefix='select_input_field_prefix' placeholder='Например: Русская' formatCreateLabel={(userInput) => `Добавить "${userInput}"`} styles={mySelectStyleString} noOptionsMessage={() => 'Уже выбрано'} />
+            <CreatableSelect ref={(ref) => nationalCuisineSelect = ref} options={allCuisines} onChange={(val) => handleCusineChange(val)}
+                value={nCuisineSelectedOption} name='national_cuisine' id='national_cuisine_field' classNamePrefix='select_input_field_prefix'
+                placeholder='Например: Русская' formatCreateLabel={(userInput) => `Добавить "${userInput}"`} styles={mySelectStyleString}
+                onFocus={(e) => clearValidate(e.target, 'national_cuisine_field')}
+                onBlur={(e) => validateInputField(e.target, 'national_cuisine_field', e.target.parentNode?.parentNode?.firstChild?.textContent !== 'Например: Русская' ? e.target.parentNode?.parentNode?.firstChild?.textContent : '')}
+                noOptionsMessage={() => 'Уже выбрано'} />
 
             <div className='horizontal-center'>
                 <p className='margin-right con_width'>Сложность <sup className='red'>*</sup></p>

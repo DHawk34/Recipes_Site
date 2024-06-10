@@ -58,9 +58,6 @@ export function AuthPage() {
     e.preventDefault()
     const formData = new FormData(e.currentTarget)
     var jsonObj = formToJson(formData)
-    var json = JSON.stringify(jsonObj);
-
-    console.log(jsonObj)
 
     axios.post(ENDPOINTS.AUTH.LOGIN, jsonObj, { withCredentials: true }).then((response) => {
       console.log(response)

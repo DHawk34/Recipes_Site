@@ -30,7 +30,8 @@ public class RecipeRepository
             Difficult = difficult,
             Hot = hot,
             Owner = owner,
-            CreationTime = creationTime
+            CreationTime = creationTime,
+            Verified = false
         });
 
         await dbContext.SaveChangesAsync();

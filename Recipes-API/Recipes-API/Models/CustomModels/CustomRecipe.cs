@@ -3,7 +3,7 @@
 namespace Recipes_API.Models.CustomModels
 {
 
-    public record CustomRecipe(string name, CustomRecipe.ImageWithType finishDishImage, int group, int[] mealtime, string? nationalCuisine, int difficult, int hot, string cookTime, int portionCount, CustomRecipe.Ingredient[] ingredients, CustomRecipe.Instruction_step[] instruction, DateTime creation_time)
+    public record CustomRecipe(string name, CustomRecipe.ImageWithType finishDishImage, int group, int[] mealtime, string nationalCuisine, int difficult, int hot, string cookTime, int portionCount, CustomRecipe.Ingredient[] ingredients, CustomRecipe.Instruction_step[] instruction, DateTime creation_time)
     {
 
         public static async ValueTask<CustomRecipe?> BindAsync(HttpContext httpContext, ParameterInfo parameter)
@@ -57,8 +57,8 @@ namespace Recipes_API.Models.CustomModels
             if (m_name == null || m_cookTime == null)
                 return null;
 
-            if (m_nationalCuisine == "")
-                m_nationalCuisine = null;
+            if (m_nationalCuisine == null || m_nationalCuisine == "")
+                return null;
 
             byte[] imageBytes = Array.Empty<byte>();
             using (var memoryStream = new MemoryStream())

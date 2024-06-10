@@ -35,7 +35,8 @@ public class AuthMapService
             Name = userDto.Name,
             Email = userDto.Email,
             PasswordHash = passwordHash,
-            PasswordSalt = passwordSalt
+            PasswordSalt = passwordSalt,
+            Admin = false
         };
 
         if (!await usersRepository.AddNewUserAsync(user))

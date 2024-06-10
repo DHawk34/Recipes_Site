@@ -29,6 +29,9 @@ public partial class User
     public int? MenuCuisine { get; set; }
 
     [JsonIgnore]
+    public bool Admin { get; set; }
+
+    [JsonIgnore]
     public virtual NationalCuisine? MenuCuisineNavigation { get; set; }
     public virtual ICollection<Recipe> Recipes { get; set; } = new List<Recipe>();
     public virtual ICollection<UserMenu> UserMenus { get; set; } = new List<UserMenu>();

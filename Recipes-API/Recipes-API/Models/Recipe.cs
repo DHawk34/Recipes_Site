@@ -30,6 +30,9 @@ public partial class Recipe
 
     public DateTime CreationTime { get; set; }
 
+    [JsonIgnore]
+    public bool Verified { get; set; }
+
     public virtual Image FinishImageNavigation { get; set; } = null!;
 
     public virtual RecipeGroup GroupNavigation { get; set; } = null!;
