@@ -18,6 +18,7 @@ const ENDPOINTS = {
         UPDATE: API_SERVER + "/recipe/update",
         DELETE: API_SERVER + "/recipe/delete",
         ALL: API_SERVER + "/recipe/all",
+        VERIFY: API_SERVER + "/recipe/verify",
         GET: API_SERVER + "/recipe"
     },
 

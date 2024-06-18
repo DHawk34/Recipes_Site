@@ -174,7 +174,7 @@ export function AddRecipe() {
     }, [recipe])
 
     useEffect(() => {
-        if (myState != null && myState.myState.refresh) {
+        if (myState != null && myState.refresh) {
             resetStates()
         }
     }, [myState]);

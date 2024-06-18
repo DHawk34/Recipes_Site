@@ -86,7 +86,7 @@ public class RecipeService
 
         var user = await usersRepo.GetUserByPublicIdAsync(userTokenInfo.PublicID);
 
-        if (user == null || recipeDb.Owner != user.Id)
+        if (user == null || recipeDb.Owner != user.Id | !user.Admin)
             return Results.BadRequest();
 
         using var transaction = await dbContext.Database.BeginTransactionAsync(); //начало транзакции SQL
@@ -137,6 +137,29 @@ public class RecipeService
         return Results.Ok(recipeDb.Id);
     }
 
+    public async Task<IResult> VerifyAsync(int id, HttpContext context)
+    {
+        var recipe = await dbContext.Recipes.FindAsync(id);
+        if (recipe == null)
+            return Results.BadRequest();
+
+        var userTokenInfo = await AuthService.TryGetUserInfoFromHttpContextAsync(context);
+
+        if (userTokenInfo == null)
+            return Results.Unauthorized();
+
+        var user = await usersRepo.GetUserByPublicIdAsync(userTokenInfo.PublicID);
+
+        if (user == null || !user.Admin)
+            return Results.Unauthorized();
+
+        recipe.Verified = true;
+
+        var count = await dbContext.SaveChangesAsync();
+
+        return Results.Ok(count > 0 ? "success" : "error");
+    }
+
     public async Task<IResult> DeleteAsync(int id, HttpContext context)
     {
         var recipe = await dbContext.Recipes.FindAsync(id);
@@ -150,7 +173,7 @@ public class RecipeService
 
         var user = await usersRepo.GetUserByPublicIdAsync(userTokenInfo.PublicID);
 
-        if (user == null || recipe.Owner != user.Id)
+        if (user == null || recipe.Owner != user.Id | !user.Admin)
             return Results.BadRequest();
 
         var instructions = await dbContext.RecipeInstructions.Where(x => x.Recipe == id).ToArrayAsync();
@@ -171,7 +194,7 @@ public class RecipeService
         return Results.Ok(count > 0 ? "success" : "error");
     }
 
-    public async Task<RecipeDtoUser?> GetAsync(int id, HttpContext context, UsersRepository usersRepository, AuthService authService)
+    public async Task<RecipeDtoUser?> GetAsync(int id, HttpContext context, AuthService authService)
     {
         var recipeDto = await recipeRepo.GetDtoAsync(id);
 
@@ -180,19 +203,21 @@ public class RecipeService
         if (userTokenInfo == null)
             return recipeDto;
 
-        var user = await usersRepository.GetUserByPublicIdAsync(userTokenInfo.PublicID);
+        var user = await usersRepo.GetUserByPublicIdAsync(userTokenInfo.PublicID);
 
         if (recipeDto != null)
         {
-            recipeDto.IsOwner = userTokenInfo.PublicID == recipeDto.OwnerNavigation.PublicId;
+            recipeDto.IsOwner = userTokenInfo.PublicID == recipeDto.OwnerNavigation.PublicId | user.Admin;
             recipeDto.IsFavorite = user.FavoriteRecipes.Any(x => x.Id == recipeDto.Id);
+            recipeDto.IsAdmin = user.Admin;
         }
 
         return recipeDto;
     }
 
-    public async Task<List<Recipe>> SearchRecipesAsync(string? name, int[]? a_ingr, int[]? r_ingr, int? n_cuisine, int? group, int? meal_t, long? time, int? difficult, int? hot, string? userPublicId, int? count, int? page, List<Recipe>? recipeSource = null)
+    public async Task<List<Recipe>> SearchRecipesAsync(bool isAdmin, string? name, int[]? a_ingr, int[]? r_ingr, int? n_cuisine, int? group, int? meal_t, long? time, int? difficult, int? hot, int? verification, string? userPublicId, int? count, int? page, List<Recipe>? recipeSource = null)
     {
+
         (int hours, int minutes) getTime(string x)
         {
             var time = x.Split(':');
@@ -222,6 +247,22 @@ public class RecipeService
 
         if (userPublicId != null)
             query = query.Where(x => x.OwnerNavigation != null ? x.OwnerNavigation.PublicId == Guid.Parse(userPublicId) : x.Owner == -1);
+
+        if (isAdmin && verification != null)
+            switch (verification)
+            {
+                case 0:
+                    query = query.Where(x => x.Verified == true);
+                    break;
+                case 1:
+                    query = query.Where(x => x.Verified == false);
+                    break;
+                default:
+                    break;
+            }
+
+        if (!isAdmin)
+            query = query.Where(x => x.Verified == true);
 
         if (difficult != null)
         {

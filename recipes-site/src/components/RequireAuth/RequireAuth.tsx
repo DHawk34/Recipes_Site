@@ -7,16 +7,24 @@ type Props = {
     onFailTo?: string
     inverse?: boolean
     cascadeRedirect?: boolean
+    dontRedirect?: boolean
 }
 
 export const REDIRECT_QUERY_PARAM_NAME = 'redirect'
 
-export default function RequireAuth({ onOk, onFailTo, inverse, cascadeRedirect }: Props) {
+export default function RequireAuth({ onOk, onFailTo, inverse, cascadeRedirect, dontRedirect }: Props) {
     const location = useLocation()
     const state = location.state
+    let redirect = false
+    
+    console.log(state)
 
     if (!onFailTo) {
         onFailTo = `/login?${REDIRECT_QUERY_PARAM_NAME}=${location.pathname}`
+    }
+
+    if (!dontRedirect) {
+        redirect = true
     }
 
     const { data, isLoading, isFetching } = useQuery(['isAuthorized', onFailTo], isAuthorized, {
@@ -32,9 +40,9 @@ export default function RequireAuth({ onOk, onFailTo, inverse, cascadeRedirect }
     // console.log('fetching... redirect: ', redirect)
     // console.log(!isOk)
 
-    const nextState = cascadeRedirect ? null : { doNotRedirect: true }
+    const nextState = cascadeRedirect ? { ...location.state } : { ...location.state, doNotRedirect: true }
 
     return isOk
         ? onOk
-        : <Navigate to={onFailTo} state={nextState} />
+        : redirect ? <Navigate to={onFailTo} state={nextState} /> : onOk
 }

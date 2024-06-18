@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { NavLink, useLocation, useParams } from 'react-router-dom'
+import { NavLink, useLocation, useNavigate, useParams } from 'react-router-dom'
 import styles from './ProfilePage.module.css'
 import { ReactComponent as Profile } from '@/assets/profile.svg';
 import { ReactComponent as Refresh } from '@/assets/refresh.svg';
@@ -22,6 +22,7 @@ export function ProfilePage() {
 
   const location = useLocation();
   const params = useParams()
+  const navigate = useNavigate();
   const userID = params.uid;
   const [cuisineOption, setCuisineOption] = useState<MyOptionTypeInt | undefined>(undefined);
   const [userMenu, setUserMenu] = useState<UserMenuModel | undefined>(undefined)
@@ -80,6 +81,12 @@ export function ProfilePage() {
       .then((res) => setUserMenu(res.data))
   }
 
+  const quit = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    axios.post(`${ENDPOINTS.AUTH.LOGOUT}`).then((res) => {
+      console.log(res)
+      navigate('/')
+    })
+  }
 
   const { data: usermenuOldFromServerResponse } = useQuery(['usermenu-old'], () => fetchData(ENDPOINTS.USERMENU.GET));
   var oldUserMenu: UserMenuModel = usermenuOldFromServerResponse
@@ -163,6 +170,8 @@ export function ProfilePage() {
 
             {userMenu ? recipeItems : null}
           </div>
+
+          <button className={`${styles.quit_btn} button`} onClick={quit}>Выйти</button>
         </>}
       </>}
     </div>

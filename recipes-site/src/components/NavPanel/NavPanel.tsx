@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import styles from './NavPanel.module.css';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { ReactComponent as SpoonAndFork} from '@/assets/spoonAndFork.svg';
-import { ReactComponent as Magnifier} from '@/assets/magnifier.svg';
-import { ReactComponent as Hamburger} from '@/assets/hamburger.svg';
-import { ReactComponent as Cross} from '@/assets/cross.svg';
+import { ReactComponent as SpoonAndFork } from '@/assets/spoonAndFork.svg';
+import { ReactComponent as Magnifier } from '@/assets/magnifier.svg';
+import { ReactComponent as Hamburger } from '@/assets/hamburger.svg';
+import { ReactComponent as Cross } from '@/assets/cross.svg';
 import { ReactComponent as Profile } from '@/assets/profile.svg';
 
 export function NavPanel() {
@@ -13,9 +13,9 @@ export function NavPanel() {
 
   function getButtons() {
     return <>
-      <NavLink className={`button ${styles.nav_button}`} to={'/recipes'} onClick={hideMenu} state={{ myState: { refresh: true } }}>Рецепты</NavLink>
-      <NavLink className={`button ${styles.nav_button}`} to={'/recipes/favorite'} onClick={hideMenu} state={{ myState: { refresh: true } }}>Избранное</NavLink>
-      <NavLink className={`button ${styles.nav_button}`} to={'/recipes/new'} onClick={hideMenu} state={{ myState: { refresh: true } }}>Добавить рецепт</NavLink>
+      <NavLink className={`button ${styles.nav_button}`} to={'/recipes'} onClick={hideMenu} state={{ refresh: true }}>Рецепты</NavLink>
+      <NavLink className={`button ${styles.nav_button}`} to={'/recipes/favorite'} onClick={hideMenu} state={{ refresh: true }}>Избранное</NavLink>
+      <NavLink className={`button ${styles.nav_button}`} to={'/recipes/new'} onClick={hideMenu} state={{ refresh: true }  }>Добавить рецепт</NavLink>
     </>
   }
 
@@ -76,7 +76,7 @@ export function NavPanel() {
       <div id={styles.pc}>
         {getButtons()}
       </div>
-      <NavLink className={`button ${styles.nav_button}`} to={'/profile'} id={styles.profile_button}><Profile width='35px' height='35px'/></NavLink>
+      <NavLink className={`button ${styles.nav_button}`} to={'/profile'} id={styles.profile_button}><Profile width='35px' height='35px' /></NavLink>
     </div>
 
   );

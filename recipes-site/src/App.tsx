@@ -20,7 +20,7 @@ export function App() {
       <Routes>
         <Route path='/' element={<Navigate to='/home' />} />
         <Route path='/home' element={<Home />} />
-        <Route path='/recipes' element={<Recipes key='recipes' />} />
+        <Route path='/recipes' element={<RequireAuth onOk={<Recipes key='recipes' />} dontRedirect />} />
         <Route path='/register' element={<RequireAuth onOk={<AuthPage key='register' />} inverse onFailTo='/profile' />} />
         <Route path='/login' element={<RequireAuth onOk={<AuthPage key='login' />} inverse onFailTo='/profile' />} />
         <Route path='/profile' element={<RequireAuth onOk={<ProfilePage key='profile' />} />} />

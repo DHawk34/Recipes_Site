@@ -26,16 +26,20 @@ public static class RecipeEndpoint
             .RequireAuthorization()
             .Produces<string>();
 
+        app.MapPut("/recipe/verify", VerifyAsync)
+            .RequireAuthorization()
+            .Produces<string>();
+
         app.MapPut("/recipe/update", EditRecipeAsync)
             .RequireAuthorization()
             .Produces<int>();
 
         app.MapGet("/recipe/search", SearchRecipesAsync)
-            .Produces<List<Recipe>>();
+            .Produces<SearchResultDto>();
 
         app.MapGet("/recipe/search/favorite", SearchFavoriteRecipesAsync)
             .RequireAuthorization()
-            .Produces<List<Recipe>>();
+            .Produces<SearchResultDto>();
     }
 
     internal static async Task<IResult> AddNewRecipeAsync(CustomRecipe recipe, HttpContext context, RecipeService recipeService)
@@ -48,9 +52,9 @@ public static class RecipeEndpoint
         return Results.Ok(await repo.GetAllAsync());
     }
 
-    internal static async Task<IResult> GetAsync(int id, HttpContext context, UsersRepository usersRepository, AuthService authService, RecipeService repo)
+    internal static async Task<IResult> GetAsync(int id, HttpContext context, AuthService authService, RecipeService repo)
     {
-        return Results.Ok(await repo.GetAsync(id, context, usersRepository, authService));
+        return Results.Ok(await repo.GetAsync(id, context, authService));
     }
 
     internal static async Task<IResult> DeleteAsync(int id, HttpContext context, RecipeService repo)
@@ -58,17 +62,34 @@ public static class RecipeEndpoint
         return await repo.DeleteAsync(id, context);
     }
 
+    internal static async Task<IResult> VerifyAsync(int id, HttpContext context, RecipeService repo)
+    {
+        return await repo.VerifyAsync(id, context);
+    }
+
     internal static async Task<IResult> EditRecipeAsync(CustomRecipe recipe, int id, HttpContext context, RecipeService recipeService)
     {
         return await recipeService.EditRecipeAsync(id, recipe, context);
     }
 
-    internal static async Task<IResult> SearchRecipesAsync(string? name, int[]? a_ingr, int[]? r_ingr, int? n_cuisine, int? group, int? meal_t, long? time, int? difficult, int? hot, int[]? r_ids, string? user, int? page, int? count, RecipeService repo)
+    internal static async Task<IResult> SearchRecipesAsync(HttpContext context, AuthService authService, UsersRepository usersRepository, string? name, int[]? a_ingr, int[]? r_ingr, int? n_cuisine, int? group, int? meal_t, long? time, int? difficult, int? hot, int? verification, int[]? r_ids, string? user, int? page, int? count, RecipeService repo)
     {
-        return Results.Ok(await repo.SearchRecipesAsync(name, a_ingr, r_ingr, n_cuisine, group, meal_t, time, difficult, hot, user, count, page));
+        bool isAdmin = false;
+        var userTokenInfo = await authService.TryGetUserInfoFromHttpContextWithValidationAsync(context);
+
+        if (userTokenInfo != null)
+        {
+            var userObj = await usersRepository.GetUserByPublicIdAsync(userTokenInfo.PublicID);
+            if (userObj != null)
+                isAdmin = userObj.Admin;
+        }
+
+        var recipes = await repo.SearchRecipesAsync(isAdmin, name, a_ingr, r_ingr, n_cuisine, group, meal_t, time, difficult, hot, verification, user, count, page);
+        SearchResultDto searchResultDto = new() { IsAdmin = isAdmin, Recipes = recipes };
+        return Results.Ok(searchResultDto);
     }
 
-    internal static async Task<IResult> SearchFavoriteRecipesAsync(HttpContext context, UsersRepository usersRepository, string? name, int[]? a_ingr, int[]? r_ingr, int? n_cuisine, int? group, int? meal_t, long? time, int? difficult, int? hot, int[]? r_ids, string? user, int? page, int? count, RecipeService repo)
+    internal static async Task<IResult> SearchFavoriteRecipesAsync(HttpContext context, AuthService authService, UsersRepository usersRepository, string? name, int[]? a_ingr, int[]? r_ingr, int? n_cuisine, int? group, int? meal_t, long? time, int? difficult, int? hot, int? verification, int[]? r_ids, string? user, int? page, int? count, RecipeService repo)
     {
         var userTokenInfo = await AuthService.TryGetUserInfoFromHttpContextAsync(context);
         if (userTokenInfo == null)
@@ -80,11 +101,14 @@ public static class RecipeEndpoint
 
         var favoriteList = userEntity.FavoriteRecipes.ToList();
 
-        if(favoriteList.Count == 0)
+        if (favoriteList.Count == 0)
         {
-            favoriteList.Add(new Recipe() { Id = -1});
+            favoriteList.Add(new Recipe() { Id = -1 });
         }
 
-        return Results.Ok(await repo.SearchRecipesAsync(name, a_ingr, r_ingr, n_cuisine, group, meal_t, time, difficult, hot, user, count, page, favoriteList));
+        var recipes = await repo.SearchRecipesAsync(false, name, a_ingr, r_ingr, n_cuisine, group, meal_t, time, difficult, hot, verification, user, count, page, favoriteList);
+        SearchResultDto searchResultDto = new() { IsAdmin = false, Recipes = recipes };
+
+        return Results.Ok(searchResultDto);
     }
 }

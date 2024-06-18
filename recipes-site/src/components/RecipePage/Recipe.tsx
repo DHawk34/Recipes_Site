@@ -7,6 +7,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ReactComponent as Star } from '@/assets/star.svg';
 import { ReactComponent as Fire } from '@/assets/fire.svg';
 import { ReactComponent as Clock } from '@/assets/clock.svg';
+import { ReactComponent as CheckMark } from '@/assets/check-mark.svg';
 import { ReactComponent as EarthPlanet } from '@/assets/earthPlanet.svg';
 import { useQuery } from 'react-query';
 import { Link } from 'react-router-dom';
@@ -34,6 +35,7 @@ export function Recipe() {
     //recipes
     const { data: recipeFromServerResponse } = useQuery(`recipe-${recipeId}`, () => fetchData(`${ENDPOINTS.RECIPES.GET}?id=${recipeId}`));
     let recipe: RecipeModel = recipeFromServerResponse
+    console.log(recipe)
 
     const componentRef = useRef(null);
 
@@ -46,6 +48,13 @@ export function Recipe() {
         documentTitle: "Рецепт-" + recipe?.name,
         removeAfterPrint: true
     });
+
+    const verifyRecipe = () =>{
+        axios.put(`${ENDPOINTS.RECIPES.VERIFY}?id=${recipeId}`).then((resp) => {
+            console.log(resp)
+            navigate('/recipes?verification=1')
+        })
+    }
 
     const handleFavorite = () => {
         if (isFavorite) {
@@ -109,6 +118,14 @@ export function Recipe() {
         else{
             document.getElementById('edit_btn')?.classList.add('hide')
             document.getElementById('delete_btn')?.classList.add('hide')
+        }
+
+        if(recipe.isAdmin && !recipe.verified){
+            document.getElementById('verify_btn')?.classList.remove('hide')
+        }
+        else{
+            document.getElementById('verify_btn')?.classList.add('hide')
+
         }
 
     }, [recipe])
@@ -180,6 +197,7 @@ export function Recipe() {
                         <button id='fav_btn' className='button_inv hide' title="Добавить в избранное" onClick={handleFavorite}><Star width='30px' height='30px' color={isFavorite ? "gold" : "transparent"} strokeWidth='1px'></Star></button>
                         <button id='print_btn' className='button_inv' title='Распечатать рецепт' onClick={handlePrint}><Printer width='30px' height='30px'></Printer></button>
                         <button id='edit_btn' className='button_inv hide' title='Изменить рецепт' onClick={editRecipe}><Pencil width='30px' height='30px'></Pencil></button>
+                        <button id='verify_btn' className='button_inv verify_button hide' title='Допустить рецепт' onClick={verifyRecipe}><CheckMark width='30px' height='30px'></CheckMark></button>
                         <button id='delete_btn' className='button_inv delete_ingredient_button hide' title='Удалить рецепт' onClick={deleteRecipe}><Trashcan width='30px' height='30px'></Trashcan></button>
                     </div>
                     <h3>Общая информация</h3>

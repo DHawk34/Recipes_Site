@@ -15,6 +15,7 @@ import axios from 'axios';
 import { RecipeCard } from '../RecipeCard/RecipeCard';
 import { MyOptionTypeInt } from '@/models/optionType';
 import { Pagination } from '../Pagintation/Pagination';
+import SearchResultModel from '@/models/searchResultModel';
 
 // type MyState = {
 //   recipes: Array<Recipe>,
@@ -67,8 +68,9 @@ export function Recipes() {
 
 
   //recipes
-  const { data: recipesFromServerResponse, refetch: recipeRefetch } = useQuery(['recipes', searchParams.toString()], fetchRecipe);
-  var recipes: Array<RecipeModel> = recipesFromServerResponse
+  const { data: searchResultFromServerResponse, refetch: recipeRefetch } = useQuery(['recipes', searchParams.toString()], fetchRecipe);
+  var searchResult: SearchResultModel = searchResultFromServerResponse
+  var recipes: Array<RecipeModel> = searchResult?.recipes
 
   //groups
   const { data: groupsFromServerResponse } = useQuery('groups', () => fetchData(ENDPOINTS.RECIPE_GROUPS.ALL), {
@@ -131,6 +133,7 @@ export function Recipes() {
     let difficult = searchParams.get('difficult')
     let hot = searchParams.get('hot')
     let page = searchParams.get('page')
+    let verification = searchParams.get('verification')
 
     if (name)
       url.searchParams.append('name', name)
@@ -155,6 +158,9 @@ export function Recipes() {
 
     if (hot)
       url.searchParams.append('hot', hot)
+
+    if (verification)
+      url.searchParams.append('verification', verification)
 
     url.searchParams.append("page", page?.toString() ?? "1")
     url.searchParams.append("count", recipePerPage.toString())
@@ -188,7 +194,7 @@ export function Recipes() {
 
 
   useEffect(() => {
-    if (myState != null && myState.myState.refresh) {
+    if (myState != null && myState.refresh) {
       // console.log('reset')
       resetStates()
     }
@@ -225,10 +231,16 @@ export function Recipes() {
 
   const mySetSearchParams = (...args: URLSearchParams[]) => {
     let paramStr = ''
-    
+
     args.forEach(urlParams => {
-      paramStr += urlParams.toString();
+      let param = urlParams.toString();
+
+      if (param !== '')
+        paramStr += '&' + param;
     });
+
+    if (paramStr.length > 0)
+      paramStr = paramStr.slice(1)
 
     let searchParam = new URLSearchParams(paramStr)
     setSearchParams(searchParam)
@@ -324,6 +336,23 @@ export function Recipes() {
 
   }, [searchParams])
 
+  useEffect(() => {
+    if(!searchResult || !searchResult.isAdmin)
+      return;
+
+    let verification = searchParams.get('verification')
+    let verificationRadio = document.getElementById(`verification-${verification}`) as HTMLInputElement;
+
+    if (verificationRadio)
+      verificationRadio.checked = true;
+    else {
+      var defaultValue = (document.getElementById(`verification--1`) as HTMLInputElement)
+
+      if (defaultValue)
+        defaultValue.checked = true;
+    }
+  }, [searchParams, searchResultFromServerResponse])
+
   let recipeItems = recipes?.map((recipe: RecipeModel, index: number) => {
     return <RecipeCard recipe={recipe} key={index} />
   })
@@ -411,6 +440,26 @@ export function Recipes() {
                 <span>Очень острое</span>
               </label>
             </div>
+
+            {searchResult?.isAdmin &&
+              <>
+                <h4>Проверка</h4>
+                <div className='selector' id={styles.hot_selector}>
+                  <label>
+                    <input type="radio" name="verification" id='verification--1' defaultChecked value={-1} />
+                    <span>Любые</span>
+                  </label>
+                  <label>
+                    <input type="radio" name="verification" id='verification-0' value={0} />
+                    <span>Проверенные</span>
+                  </label>
+                  <label>
+                    <input type="radio" name="verification" id='verification-1' value={1} />
+                    <span>Непроверенные</span>
+                  </label>
+                </div>
+              </>}
+
             <button type="submit" className={`button ${styles.margin_top}`}>Найти</button>
           </div>
         </div>

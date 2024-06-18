@@ -79,7 +79,7 @@ public class UserMenuRepository
 
         user.MenuCuisine = menu;
 
-        var recipes = await dbContext.Recipes.Include(x => x.Mealtimes).Include(x => x.NationalCuisineNavigation).Include(x => x.RecipeIngredients).ThenInclude(x => x.IngredientNavigation).ToListAsync();
+        var recipes = await dbContext.Recipes.Include(x => x.Mealtimes).Include(x => x.NationalCuisineNavigation).Include(x => x.RecipeIngredients).ThenInclude(x => x.IngredientNavigation).Where(x => x.Verified == true).ToListAsync();
         var used_recipes = new List<Recipe>();
 
         for (int day = 1; day < 8; day++)

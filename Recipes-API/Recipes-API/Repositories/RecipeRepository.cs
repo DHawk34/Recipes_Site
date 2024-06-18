@@ -40,21 +40,21 @@ public class RecipeRepository
 
     public async Task<List<Recipe>> GetGroupsCatalogAsync()
     {
-        IEnumerable<Recipe> query = await dbContext.Recipes.Include(x => x.GroupNavigation).ToListAsync();
+        IEnumerable<Recipe> query = await dbContext.Recipes.Include(x => x.GroupNavigation).Where(x => x.Verified == true).ToListAsync();
         query = query.DistinctBy(x => x.Group);
         return query.ToList();
     }
 
     public async Task<List<Recipe>> GetNationalCuisineCatalogAsync()
     {
-        IEnumerable<Recipe> query = await dbContext.Recipes.Include(x => x.NationalCuisineNavigation).Where(x => x.NationalCuisine != null).ToListAsync();
+        IEnumerable<Recipe> query = await dbContext.Recipes.Include(x => x.NationalCuisineNavigation).Where(x => x.Verified == true).ToListAsync();
         query = query.DistinctBy(x => x.NationalCuisine);
         return query.ToList();
     }
 
     public async Task<List<Recipe>> GetNewsCatalogAsync(int count)
     {
-        IEnumerable<Recipe> query = await dbContext.Recipes.ToListAsync();
+        IEnumerable<Recipe> query = await dbContext.Recipes.Where(x => x.Verified == true).ToListAsync();
         query = query.OrderByDescending(x => x.CreationTime).Take(count);
         return query.ToList();
     }
