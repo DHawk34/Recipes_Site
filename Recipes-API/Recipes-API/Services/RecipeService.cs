@@ -116,6 +116,7 @@ public class RecipeService
         recipeDb.Mealtimes = dbContext.Mealtimes.Where(x => recipe.mealtime.Contains(x.Id)).ToList();
         recipeDb.NationalCuisine = await nationalCuisineRepo.GetIdOrAddAsync(recipe.nationalCuisine);
         recipeDb.PortionCount = recipe.portionCount;
+        recipeDb.Verified = false;
 
         await dbContext.SaveChangesAsync();
 
