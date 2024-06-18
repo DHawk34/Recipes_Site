@@ -109,6 +109,7 @@ public class UserMenuRepository
             if (recipe == null)
                 recipe = new Recipe() { Id = -1 };
 
+            used_recipes.Add(recipe);
             return recipe;
         }
 
